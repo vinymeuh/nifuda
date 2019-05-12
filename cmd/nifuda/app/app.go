@@ -32,7 +32,7 @@ func New(version string, build string) *App {
 			appName, version, build, runtime.GOOS, runtime.GOARCH, runtime.Version()))
 
 		// subcommands
-		app.Command("show", "Display image metadata", cmdNotYetImplemented)
+		app.Command("show", "Display image metadata", cmdShow)
 
 		app.Command("dev", "Miscellaneous tools for development and debug", func(cmd *cli.Cmd) {
 			cmd.Command("empty-jpeg", "Create an empty JPEG file", cmdDevEmptyJPEG)
