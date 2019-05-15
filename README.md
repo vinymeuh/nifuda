@@ -4,10 +4,7 @@
 [![Build Status](https://travis-ci.org/vinymeuh/nifuda.svg?branch=master)](https://travis-ci.org/vinymeuh/nifuda)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vinymeuh/nifuda)](https://goreportcard.com/report/github.com/vinymeuh/nifuda)
 
-
-A tool to manage my photo library. The main goal is to **import** photos in my photo library organising it using EXIF tags.
-
-Can be used too as a library for basic decoding of image metadata for different file format.
+Provides (basic) decoding of image metadata for different file format.
 
 ## References
 
