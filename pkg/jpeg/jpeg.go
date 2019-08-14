@@ -11,21 +11,19 @@ import (
 // A File consists of a sequence of Segments
 type File struct {
 	rs       io.ReadSeeker
-	Segments []*Segment // list of all Segments
+	ExifTIFF *Segment // embedded TIFF file for Exif tags
 }
 
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{rs: rs}
 	err := f.readSegments()
-	if err != nil && len(f.Segments) == 0 {
+	if err != nil {
 		return nil, err
 	}
 	return f, err
 }
 
 func (f *File) readSegments() error {
-	f.Segments = make([]*Segment, 0)
-
 	// ensure we have a SOI
 	s0, err := nextSegment(f.rs)
 	if err != nil {
@@ -34,17 +32,20 @@ func (f *File) readSegments() error {
 	if s0.Marker != SOI {
 		return errors.New("first segment must be SOI")
 	}
-	f.Segments = append(f.Segments, s0)
 
-	// next segments
+	// next segments until we have found APP1 Exif
 	for {
 		s, err := nextSegment(f.rs)
 		if err != nil {
 			return err
 		}
-		f.Segments = append(f.Segments, s)
 
-		if s.Marker == EOI || s.Marker == SOS { // FIXME: don't know how to process after SOS marker
+		if s.Marker == APP1 && string(s.Data[0:6]) == ExifIdentifier {
+			f.ExifTIFF = s
+			break
+		}
+
+		if s.Marker == EOI || s.Marker == SOS { // don't know how to process after SOS marker
 			break
 		}
 	}

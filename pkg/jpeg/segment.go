@@ -90,6 +90,9 @@ const (
 	COM   Marker = 0xfe
 )
 
+// APP1 Exif consists of the APP1 marker, ExifIdentifier code and the attribute information itself.
+const ExifIdentifier = "Exif\x00\x00"
+
 func (m Marker) String() string {
 	switch m {
 	case SOF0:

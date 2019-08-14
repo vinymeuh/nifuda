@@ -17,14 +17,11 @@ import (
 Features of the Exif image file specification include the following:
   * The file-recording format is based on existing formats.
     * Compressed files are recorded as JPEG (ISO/IEC 10918-1) with application marker segments (APP1 and APP2) inserted.
-	  * Uncompressed files are recorded in TIFF rev 6.0 format.
+	* Uncompressed files are recorded in TIFF rev 6.0 format.
   * Related attribute information for both compressed and uncompressed files is stored in the tag information format defined in TIFF Rev. 6.0.
   * Information specific to the camera system and not defined in TIFF is stored in private tags registered for Exif.
   * Compressed files can record extended data exceeding 64 KBytes by dividing it into multiple APP2 segments.
 */
-
-// APP1 consists of the APP1 marker, Exif identifier code and the attribute information itself.
-const ExifIdentifier = "Exif\x00\x00"
 
 type File struct {
 	jpeg     *jpeg.File
@@ -65,7 +62,11 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		}
 		f.format = JPEG
 		f.jpeg = jpegFile
-		if err := f.readAPP1Marker(); err != nil {
+		if f.jpeg.ExifTIFF == nil {
+			return nil, errors.New("no Exif APP1 marker found")
+		}
+		f.tiff, err = tiff.Read(bytes.NewReader(f.jpeg.ExifTIFF.Data[6:]), ExifDictionary)
+		if err != nil {
 			return nil, err
 		}
 	case TIFF:
@@ -97,17 +98,6 @@ func identifyFileFormat(rs io.ReadSeeker) FileFormat {
 	default:
 		return UNKNOWN
 	}
-}
-
-func (f *File) readAPP1Marker() error {
-	var err error
-	for _, s := range f.jpeg.Segments[1:] { // skip SOI
-		if s.Marker == jpeg.APP1 && string(s.Data[0:6]) == ExifIdentifier {
-			f.tiff, err = tiff.Read(bytes.NewReader(s.Data[6:]), ExifDictionary)
-			return err
-		}
-	}
-	return errors.New("no Exif APP1 marker found")
 }
 
 func (f *File) parseExif() error {
