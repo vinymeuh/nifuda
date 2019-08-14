@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-// A Segment
+// Segment is the data structure implementation for JPEG Segment
 type Segment struct {
 	// marker begins with a 0xff byte followed by a byte indicating what kind of marker it is
 	Marker Marker
@@ -90,17 +90,8 @@ const (
 	COM   Marker = 0xfe
 )
 
-// APP1 Exif consists of the APP1 marker, ExifIdentifier code and the attribute information itself.
+// ExifIdentifier code is used to identify APP1 Segment as Exif data
 const ExifIdentifier = "Exif\x00\x00"
-
-func (m Marker) String() string {
-	switch m {
-	case SOF0:
-		return fmt.Sprintf("SOF0 (0xff%x)", uint16(m))
-		//FIXME: to be continued, so boring :(
-	}
-	return fmt.Sprintf("UNKNOWN (0xff%x)", uint16(m))
-}
 
 func nextSegment(r io.Reader) (*Segment, error) {
 	buf := make([]byte, 2) // used to read marker & length

@@ -8,12 +8,14 @@ import (
 	"io"
 )
 
-// A File consists of a sequence of Segments
+// A File is the result of reading a JPEG file.
+// Currently it is restricted to detect embedded Exif data
 type File struct {
-	rs       io.ReadSeeker
-	ExifTIFF *Segment // embedded TIFF file for Exif tags
+	rs          io.ReadSeeker // the JPEG data stream
+	exifSubTIFF []byte        // embedded TIFF file for Exif tags
 }
 
+// Read and parse internal structures of a JPEG file
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{rs: rs}
 	err := f.readSegments()
@@ -21,6 +23,11 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		return nil, err
 	}
 	return f, err
+}
+
+// ExifSubTIFF returns the embedded Exif TIFF file
+func (f *File) ExifSubTIFF() []byte {
+	return f.exifSubTIFF
 }
 
 func (f *File) readSegments() error {
@@ -41,7 +48,7 @@ func (f *File) readSegments() error {
 		}
 
 		if s.Marker == APP1 && string(s.Data[0:6]) == ExifIdentifier {
-			f.ExifTIFF = s
+			f.exifSubTIFF = s.Data[6:]
 			break
 		}
 

@@ -62,10 +62,11 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		}
 		f.format = JPEG
 		f.jpeg = jpegFile
-		if f.jpeg.ExifTIFF == nil {
+		subTIFF := f.jpeg.ExifSubTIFF()
+		if subTIFF == nil {
 			return nil, errors.New("no Exif APP1 marker found")
 		}
-		f.tiff, err = tiff.Read(bytes.NewReader(f.jpeg.ExifTIFF.Data[6:]), ExifDictionary)
+		f.tiff, err = tiff.Read(bytes.NewReader(subTIFF), ExifDictionary)
 		if err != nil {
 			return nil, err
 		}

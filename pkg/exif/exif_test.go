@@ -36,6 +36,7 @@ var tcExifFile = []struct {
 	tagIDs   []uint16
 }{
 	{"../../test/data/minimal.tif", TIFF, []uint16{257}},
+	{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", JPEG, []uint16{}},
 }
 
 func TestExifFile(t *testing.T) {

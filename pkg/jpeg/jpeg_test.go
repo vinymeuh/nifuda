@@ -34,9 +34,10 @@ func TestJpegFileError(t *testing.T) {
 
 var tcJpegFile = []struct {
 	filepath string
-	markers  []Marker
+	hasExif  bool
 }{
-	{"../../test/data/minimal.jpg", []Marker{SOI, APP0, EOI}},
+	{"../../test/data/minimal.jpg", false},
+	{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", true},
 }
 
 func TestJpegFile(t *testing.T) {
@@ -47,16 +48,18 @@ func TestJpegFile(t *testing.T) {
 		}
 		defer f.Close()
 
-		_, err = Read(f)
+		jf, err := Read(f)
 		if err != nil {
 			t.Errorf("%s: opening fails, error=%s", tc.filepath, err)
 			continue
 		}
 
-		// for i, expected := range tc.markers {
-		// 	if jf.Segments[i].Marker != expected {
-		// 		t.Errorf("%s: wrong segment marker, expected=%s, actual=%s", tc.filepath, expected, jf.Segments[i].Marker) //FIXME: formatage segment marker
-		// 	}
-		// }
+		if tc.hasExif == false && jf.ExifSubTIFF() != nil {
+			t.Errorf("%s: invalid ExifSubTIFF detected", tc.filepath)
+		}
+		if tc.hasExif == true && jf.ExifSubTIFF() == nil {
+			t.Errorf("%s: should have detected ExifSubTIFF", tc.filepath)
+		}
+
 	}
 }
