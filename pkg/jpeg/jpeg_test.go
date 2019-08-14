@@ -34,10 +34,9 @@ func TestJpegFileError(t *testing.T) {
 
 var tcJpegFile = []struct {
 	filepath string
-	error    error
 	markers  []Marker
 }{
-	{"../../test/data/minimal.jpg", nil, []Marker{SOI, APP0, EOI}},
+	{"../../test/data/minimal.jpg", []Marker{SOI, APP0, EOI}},
 }
 
 func TestJpegFile(t *testing.T) {
