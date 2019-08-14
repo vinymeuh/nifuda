@@ -36,12 +36,12 @@ type File struct {
 	Tags    [][]Tag
 }
 
-func Read(rs io.ReadSeeker) (*File, error) {
+func Read(rs io.ReadSeeker, dict TagDictionary) (*File, error) {
 	f := &File{rs: rs}
 	if err := f.readIFH(); err != nil {
 		return nil, err
 	}
-	err := f.readIFDs()
+	err := f.readIFDs(dict)
 	if err != nil && len(f.Tags) == 0 { // failed to read ifd0
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (f *File) readIFH() error {
 }
 
 // ReadIFDs read all IFDs starting from IFD0 at f.offset0
-func (f *File) readIFDs() error {
+func (f *File) readIFDs(dict TagDictionary) error {
 
 	ifds := make([]*ifd, 0)
 
@@ -97,7 +97,7 @@ func (f *File) readIFDs() error {
 		case previous:
 			return errors.New("recursive ifd")
 		default:
-			ifd, err := f.ReadIFD(next)
+			ifd, err := f.ReadIFD(next, dict)
 			if err != nil {
 				return fmt.Errorf("failed to read ifd%d: %w", i, err)
 			}
@@ -117,7 +117,7 @@ func (f *File) readIFDs() error {
 }
 
 // ReadIFD read the IFD that start at offset
-func (f *File) ReadIFD(offset uint32) (*ifd, error) {
+func (f *File) ReadIFD(offset uint32, dict TagDictionary) (*ifd, error) {
 	f.rs.Seek(int64(offset), io.SeekStart)
 	ifd := &ifd{}
 
@@ -133,6 +133,15 @@ func (f *File) ReadIFD(offset uint32) (*ifd, error) {
 	if _, err := f.rs.Read(data); err != nil {
 		return ifd, fmt.Errorf("failed to read %d bytes: %w", 12*ifd.entries, err)
 	}
+
+	// read offset for next IFD
+	next := make([]byte, 4)
+	if _, err := f.rs.Read(next); err != nil {
+		return ifd, fmt.Errorf("failed to read 4 bytes: %w", err)
+	}
+	binary.Read(bytes.NewReader(next), f.bo, &ifd.next)
+
+	// Decode tags in the array of Tags
 	for i := 0; i < int(ifd.entries); i++ {
 		tag := Tag{}
 
@@ -142,19 +151,22 @@ func (f *File) ReadIFD(offset uint32) (*ifd, error) {
 
 		length := dataTypes[tag.DataType].size * tag.DataCount
 		if length <= 4 {
-			tag.DataValue = data[12*i+8 : 12*i+8+int(length)]
+			tag.DataRaw = data[12*i+8 : 12*i+8+int(length)]
 		} else {
-			binary.Read(bytes.NewReader(data[12*i+8:12*i+12]), f.bo, &tag.DataOffset)
+			var offset uint32
+			binary.Read(bytes.NewReader(data[12*i+8:12*i+12]), f.bo, &offset)
+			tag.DataRaw = make([]byte, length)
+			if _, err := f.rs.Seek(int64(offset), io.SeekStart); err != nil {
+				return ifd, fmt.Errorf("failed to seek of %d bytes: %w", offset, err)
+			}
+			if _, err := f.rs.Read(tag.DataRaw); err != nil {
+				return ifd, fmt.Errorf("failed to read field value: %w", err)
+			}
 		}
+
+		tag.decode(dict, f.bo)
 		ifd.Tags = append(ifd.Tags, tag)
 	}
-
-	// read offset for next IFD
-	next := make([]byte, 4)
-	if _, err := f.rs.Read(next); err != nil {
-		return ifd, fmt.Errorf("failed to read 4 bytes: %w", err)
-	}
-	binary.Read(bytes.NewReader(next), f.bo, &ifd.next)
 
 	return ifd, nil
 }

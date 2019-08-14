@@ -31,7 +31,7 @@ type File struct {
 	tiff     *tiff.File // "real" TIFF file or the one embedded in JPEG APP1 segment
 	format   FileFormat
 	exifTags []tiff.Tag
-	//gpsTags []tiff.Tag	// TODO
+	gpsTags  []tiff.Tag
 }
 
 type FileFormat int
@@ -69,7 +69,7 @@ func Read(rs io.ReadSeeker) (*File, error) {
 			return nil, err
 		}
 	case TIFF:
-		tiffFile, err := tiff.Read(rs)
+		tiffFile, err := tiff.Read(rs, ExifDictionary)
 		if err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (f *File) readAPP1Marker() error {
 	var err error
 	for _, s := range f.jpeg.Segments[1:] { // skip SOI
 		if s.Marker == jpeg.APP1 && string(s.Data[0:6]) == ExifIdentifier {
-			f.tiff, err = tiff.Read(bytes.NewReader(s.Data[6:]))
+			f.tiff, err = tiff.Read(bytes.NewReader(s.Data[6:]), ExifDictionary)
 			return err
 		}
 	}
@@ -112,13 +112,31 @@ func (f *File) readAPP1Marker() error {
 
 func (f *File) parseExif() error {
 	for _, tag := range f.tiff.Tags[0] {
-		if tag.TagID == 34665 { // Exif IFD
-			ifd, err := f.tiff.ReadIFD(tag.DataOffset)
+		switch tag.TagID {
+		case 34665: // Exif IFD
+			offset, _ := tag.UInt32(0)
+			ifd, err := f.tiff.ReadIFD(offset, ExifDictionary)
 			if err != nil {
 				return fmt.Errorf("failed to read Exif IFD: %w", err)
 			}
 			f.exifTags = ifd.Tags
+		case 34853: // GPS IFD
+			offset, _ := tag.UInt32(0)
+			ifd, err := f.tiff.ReadIFD(offset, GPSDictionary)
+			if err != nil {
+				return fmt.Errorf("failed to read GPS IFD: %w", err)
+			}
+			f.gpsTags = ifd.Tags
 		}
+
 	}
 	return nil
+}
+
+func (f *File) Tags() map[string][]tiff.Tag {
+	t := make(map[string][]tiff.Tag)
+	t["ifd0"] = f.tiff.Tags[0]
+	t["exif"] = f.exifTags
+	t["gps"] = f.gpsTags
+	return t
 }

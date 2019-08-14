@@ -29,7 +29,7 @@ func TestTiffFileError(t *testing.T) {
 		}
 		defer f.Close()
 
-		tf, err := Read(f)
+		tf, err := Read(f, nil)
 		if err == nil || tf != nil {
 			t.Errorf("%s: opening tiff file should have failed and returned nil, err=%s, f=%v", tc.filepath, err, tf)
 		}
@@ -52,7 +52,7 @@ func TestTiffFile(t *testing.T) {
 		}
 		defer f.Close()
 
-		tf, err := Read(f)
+		tf, err := Read(f, nil)
 		if err != nil || tf == nil {
 			t.Errorf("%s: opening fails, error=%s, f=%v", tc.filepath, err, tf)
 			continue

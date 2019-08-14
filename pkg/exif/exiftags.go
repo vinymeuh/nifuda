@@ -5,8 +5,8 @@ package exif
 
 import "github.com/vinymeuh/nifuda/pkg/tiff"
 
-// TagDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
-var TagDictionary = tiff.TagDictionary{
+// ExifDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
+var ExifDictionary = tiff.TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
@@ -149,4 +149,16 @@ var TagDictionary = tiff.TagDictionary{
 	// Ratings tag used by Windows
 	18246: {Name: "Image.Rating"},
 	18249: {Name: "Image.RatingPercent"},
+}
+
+var GPSDictionary = tiff.TagDictionary{
+	/*****************************/
+	/* GPS Attribute Information */
+	/*****************************/
+	// A. Tags Relating to GPS
+	0: {Name: "GPSVersionID"},
+	1: {Name: "GPSLatitudeRef"},
+	2: {Name: "GPSLatitude"},
+	// To be completed ...
+	31: {Name: "GPSHPositioningError"},
 }
