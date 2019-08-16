@@ -146,20 +146,20 @@ func (f *File) ReadIFD(offset uint32, dict TagDictionary) (*ifd, error) {
 		tag := Tag{}
 
 		binary.Read(bytes.NewReader(data[12*i:12*i+2]), f.bo, &tag.TagID)
-		binary.Read(bytes.NewReader(data[12*i+2:12*i+4]), f.bo, &tag.DataType)
-		binary.Read(bytes.NewReader(data[12*i+4:12*i+8]), f.bo, &tag.DataCount)
+		binary.Read(bytes.NewReader(data[12*i+2:12*i+4]), f.bo, &tag.dataType)
+		binary.Read(bytes.NewReader(data[12*i+4:12*i+8]), f.bo, &tag.dataCount)
 
-		length := dataTypes[tag.DataType].size * tag.DataCount
+		length := dataTypes[tag.dataType].size * tag.dataCount
 		if length <= 4 {
-			tag.DataRaw = data[12*i+8 : 12*i+8+int(length)]
+			tag.dataRaw = data[12*i+8 : 12*i+8+int(length)]
 		} else {
 			var offset uint32
 			binary.Read(bytes.NewReader(data[12*i+8:12*i+12]), f.bo, &offset)
-			tag.DataRaw = make([]byte, length)
+			tag.dataRaw = make([]byte, length)
 			if _, err := f.rs.Seek(int64(offset), io.SeekStart); err != nil {
 				return ifd, fmt.Errorf("failed to seek of %d bytes: %w", offset, err)
 			}
-			if _, err := f.rs.Read(tag.DataRaw); err != nil {
+			if _, err := f.rs.Read(tag.dataRaw); err != nil {
 				return ifd, fmt.Errorf("failed to read field value: %w", err)
 			}
 		}
