@@ -10,10 +10,7 @@ ENV = /usr/bin/env
 .PHONY: test
 .DEFAULT_GOAL := help
 
-VERSION = `git describe --tags --always`
-BUILD   = `date +%FT%T%z`
-
-LDFLAGS = -w -s -X main.version=${VERSION} -X main.build=${BUILD}
+LDFLAGS = -w -s
 
 coverage: ## Create coverage report
 	go tool cover -func=coverage.txt
