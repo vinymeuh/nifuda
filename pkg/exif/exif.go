@@ -103,17 +103,15 @@ func identifyFileFormat(rs io.ReadSeeker) FileFormat {
 
 func (f *File) parseExif() error {
 	for _, tag := range f.tiff.Tags[0] {
-		switch tag.TagID {
-		case 34665: // Exif IFD
-			offset, _ := tag.UInt32(0)
-			ifd, err := f.tiff.ReadIFD(offset, ExifDictionary)
+		switch tag.ID() {
+		case tagID_EXIF_IFD:
+			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), ExifDictionary)
 			if err != nil {
 				return fmt.Errorf("failed to read Exif IFD: %w", err)
 			}
 			f.exifTags = ifd.Tags
-		case 34853: // GPS IFD
-			offset, _ := tag.UInt32(0)
-			ifd, err := f.tiff.ReadIFD(offset, GPSDictionary)
+		case tagID_GPS_IFD:
+			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), GPSDictionary)
 			if err != nil {
 				return fmt.Errorf("failed to read GPS IFD: %w", err)
 			}
