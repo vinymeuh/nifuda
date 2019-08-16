@@ -6,10 +6,7 @@ package tiff
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
-	"math"
-	"strings"
 )
 
 /*
@@ -22,22 +19,32 @@ To save time and space the Offset contains directly the Value instead of pointin
 */
 
 type Tag struct {
-	TagID     uint16   // Tag identifier
-	dataType  dataType // The scalar type of the data items
-	dataCount uint32   // The number of items in the tag data
-	dataRaw   []byte   // The raw value of data
+	id    uint16 // Tag identifier
+	name  string // Tag name as decoded using a TagDictionary
+	value TagValue
+}
 
-	Name      string
-	intValues []int64
-	ratValues [][]int64
-	strValue  string
+func (t *Tag) ID() uint16 {
+	return t.id
+}
+
+func (t *Tag) Type() string {
+	return dataTypes[t.value.dataType].name
+}
+
+func (t *Tag) Name() string {
+	return t.name
+}
+
+func (t *Tag) Value() TagValue {
+	return t.value
 }
 
 // dataType is the TIFF data type as defined in page 15 of TIFF Revision 6.0
-type dataType uint16
+type DataType uint16
 
 const (
-	BYTE      dataType = 1
+	BYTE      DataType = 1
 	ASCII              = 2
 	SHORT              = 3
 	LONG               = 4
@@ -51,7 +58,7 @@ const (
 	DOUBLE             = 12
 )
 
-var dataTypes = map[dataType]struct {
+var dataTypes = map[DataType]struct {
 	name string
 	size uint32
 }{
@@ -69,135 +76,90 @@ var dataTypes = map[dataType]struct {
 	DOUBLE:    {name: "DOUBLE", size: 8},
 }
 
-type TagDictionary map[uint16]struct {
-	Name string
-}
-
 func (t Tag) String() string {
 	return fmt.Sprintf("id=%d, type=%s, count=%d, value=%s",
-		t.TagID, dataTypes[t.dataType].name, t.dataCount, t.StringValue())
+		t.id, dataTypes[t.value.dataType].name, t.value.count, t.Value().String())
 }
 
 func (t *Tag) decode(dict TagDictionary, bo binary.ByteOrder) {
 	if dict != nil {
-		if val, ok := dict[t.TagID]; ok {
-			t.Name = val.Name
+		if val, ok := dict[t.id]; ok {
+			t.name = val.Name
 		} else {
-			t.Name = "unknown"
+			t.name = "undefined"
 		}
 	} else {
-		t.Name = "unknown"
+		t.name = "undefined"
 	}
 
-	switch t.dataType {
+	switch t.value.dataType {
 	case BYTE:
 		var v uint8
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case ASCII:
-		t.strValue = string(t.dataRaw[0 : t.dataCount-1]) // -1 to remove character '\0'
+		t.value.strValue = string(t.value.raw[0 : t.value.count-1]) // -1 to remove character '\0'
 	case SHORT:
 		var v uint16
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case LONG:
 		var v uint32
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case RATIONAL:
 		var n, d uint32
-		t.ratValues = make([][]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.ratValues {
+		t.value.ratValues = make([][]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.ratValues {
 			binary.Read(raw, bo, &n)
 			binary.Read(raw, bo, &d)
-			t.ratValues[i] = []int64{int64(n), int64(d)}
+			t.value.ratValues[i] = []int64{int64(n), int64(d)}
 		}
 	case SBYTE:
 		var v int8
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case SSHORT:
 		var v int16
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case SLONG:
 		var v int32
-		t.intValues = make([]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.intValues {
+		t.value.intValues = make([]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.intValues {
 			binary.Read(raw, bo, &v)
-			t.intValues[i] = int64(v)
+			t.value.intValues[i] = int64(v)
 		}
 	case SRATIONAL:
 		var n, d int32
-		t.ratValues = make([][]int64, t.dataCount)
-		raw := bytes.NewReader(t.dataRaw)
-		for i := range t.ratValues {
+		t.value.ratValues = make([][]int64, t.value.count)
+		raw := bytes.NewReader(t.value.raw)
+		for i := range t.value.ratValues {
 			binary.Read(raw, bo, &n)
 			binary.Read(raw, bo, &d)
-			t.ratValues[i] = []int64{int64(n), int64(d)}
+			t.value.ratValues[i] = []int64{int64(n), int64(d)}
 		}
-	}
-}
-
-func (t *Tag) StringValue() string {
-	switch t.dataType {
-	case ASCII:
-		return t.strValue
-	case BYTE, SHORT, LONG, SBYTE, SSHORT, SLONG:
-		return strings.Trim(strings.Replace(fmt.Sprint(t.intValues), " ", " ", -1), "[]")
-	case RATIONAL, SRATIONAL:
-		return strings.Trim(strings.Replace(strings.Replace(fmt.Sprint(t.ratValues), " ", "/", -1), "]/[", " ", -1), "[]")
-	default:
-		// Only 32 firsts characters postfixed with "..."
-		return fmt.Sprintf("%s...", string(t.dataRaw[0:int(math.Min(float64(t.dataCount), 32))]))
-	}
-}
-
-func (t *Tag) UInt8(i int) (uint8, error) {
-	switch t.dataType {
-	case BYTE:
-		return uint8(t.intValues[i]), nil
-	default:
-		return 0, errors.New("not an uint8")
-	}
-}
-
-func (t *Tag) UInt16(i int) (uint16, error) {
-	switch t.dataType {
-	case SHORT:
-		return uint16(t.intValues[i]), nil
-	default:
-		return 0, errors.New("not an uint16")
-	}
-}
-
-func (t *Tag) UInt32(i int) (uint32, error) {
-	switch t.dataType {
-	case LONG:
-		return uint32(t.intValues[i]), nil
-	default:
-		return 0, errors.New("not an uint32")
 	}
 }
