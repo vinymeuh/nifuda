@@ -7,54 +7,51 @@ import (
 	"testing"
 )
 
-// Tests cases for invalid or corrupted files
-// We expect to receive an error, not to panic
-var tcTiffFileError = []struct {
-	filepath string
-}{
-	{"../../test/data/empty.txt"},
-	{"../../test/data/dummy.txt"},
-	{"../../test/data/wrong_version.tif"},
-	{"../../test/data/wrong_offset0.tif"},
-	{"../../test/data/no_ifd0.tif"},
-	{"../../test/data/recursive_ifd0.tif"},
-	{"../../test/data/wrong_ifd1.tif"},
-}
+func TestTiffFileMustReturnError(t *testing.T) {
+	tests := []struct {
+		filepath string
+	}{
+		{"../../test/data/empty.txt"},
+		{"../../test/data/dummy.txt"},
+		{"../../test/data/wrong_version.tif"},
+		{"../../test/data/wrong_offset0.tif"},
+		{"../../test/data/no_ifd0.tif"},
+		{"../../test/data/recursive_ifd0.tif"},
+		{"../../test/data/wrong_ifd1.tif"},
+	}
 
-func TestTiffFileError(t *testing.T) {
-	for _, tc := range tcTiffFileError {
-		f, err := os.Open(tc.filepath)
+	for _, tc := range tests {
+		osf, err := os.Open(tc.filepath)
 		if err != nil {
 			t.Fatalf("%s: opening os file failed with err=%s", tc.filepath, err)
 		}
-		defer f.Close()
+		defer osf.Close()
 
-		tf, err := Read(f, nil)
-		if err == nil || tf != nil {
-			t.Errorf("%s: opening tiff file should have failed and returned nil, err=%s, f=%v", tc.filepath, err, tf)
+		f, err := Read(osf, nil)
+		if err == nil || f != nil {
+			t.Errorf("%s: opening tiff file should have failed and returned nil, err=%s, f=%v", tc.filepath, err, f)
 		}
 	}
 }
 
-// Tests cases for valid TIFF files
-var tcTiffFile = []struct {
-	filepath string
-}{
-	{"../../test/data/minimal.tif"},
-	{"../../test/data/minimal_with_ifd1.tif"},
-}
-
 func TestTiffFile(t *testing.T) {
-	for _, tc := range tcTiffFile {
-		f, err := os.Open(tc.filepath)
+	tests := []struct {
+		filepath string
+	}{
+		{"../../test/data/minimal.tif"},
+		{"../../test/data/minimal_with_ifd1.tif"},
+	}
+
+	for _, tc := range tests {
+		osf, err := os.Open(tc.filepath)
 		if err != nil {
 			t.Fatalf("%s: opening os file failed with err=%s", tc.filepath, err)
 		}
-		defer f.Close()
+		defer osf.Close()
 
-		tf, err := Read(f, nil)
-		if err != nil || tf == nil {
-			t.Errorf("%s: opening fails, error=%s, f=%v", tc.filepath, err, tf)
+		f, err := Read(osf, nil)
+		if err != nil || f == nil {
+			t.Errorf("%s: opening fails, err=%s, f=%v", tc.filepath, err, f)
 			continue
 		}
 
