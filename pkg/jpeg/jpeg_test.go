@@ -19,13 +19,13 @@ func TestJpegFileMustReturnError(t *testing.T) {
 	for _, tc := range tests {
 		osf, err := os.Open(tc.filepath)
 		if err != nil {
-			t.Fatalf("%s: opening os file failed with err=%s", tc.filepath, err)
+			t.Fatalf("%s: opening file failed with err=%s", tc.filepath, err)
 		}
 		defer osf.Close()
 
 		f, err := Read(osf)
 		if err == nil || f != nil {
-			t.Errorf("%s: opening should have failed and returned nil, err=%s, f=%v", tc.filepath, err, f)
+			t.Errorf("%s: reading file should have failed and returned nil, err=%s, f=%v", tc.filepath, err, f)
 		}
 	}
 }
@@ -42,13 +42,13 @@ func TestJpegFile(t *testing.T) {
 	for _, tc := range tests {
 		osf, err := os.Open(tc.filepath)
 		if err != nil {
-			t.Fatalf("%s: opening os file failed with err=%s", tc.filepath, err)
+			t.Fatalf("%s: opening file failed with err=%s", tc.filepath, err)
 		}
 		defer osf.Close()
 
 		f, err := Read(osf)
 		if err != nil || f == nil {
-			t.Errorf("%s: opening fails, err=%s, f=%v", tc.filepath, err, f)
+			t.Errorf("%s: reading fails, err=%s, f=%v", tc.filepath, err, f)
 			continue
 		}
 

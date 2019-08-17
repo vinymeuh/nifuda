@@ -11,7 +11,7 @@ const (
 )
 
 // ExifDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
-var ExifDictionary = tiff.TagDictionary{
+var ExifTags = tiff.TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
@@ -156,7 +156,7 @@ var ExifDictionary = tiff.TagDictionary{
 	18249: {Name: "Image.RatingPercent"},
 }
 
-var GPSDictionary = tiff.TagDictionary{
+var GPSTags = tiff.TagDictionary{
 	/*****************************/
 	/* GPS Attribute Information */
 	/*****************************/

@@ -39,17 +39,6 @@ const (
 	UNKNOWN
 )
 
-func (ff FileFormat) String() string {
-	switch ff {
-	case JPEG:
-		return "jpeg"
-	case TIFF:
-		return "tiff"
-	default:
-		return "unknown"
-	}
-}
-
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{}
 
@@ -66,12 +55,12 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		if subTIFF == nil {
 			return nil, errors.New("no Exif APP1 marker found")
 		}
-		f.tiff, err = tiff.Read(bytes.NewReader(subTIFF), ExifDictionary)
+		f.tiff, err = tiff.Read(bytes.NewReader(subTIFF), ExifTags)
 		if err != nil {
 			return nil, err
 		}
 	case TIFF:
-		tiffFile, err := tiff.Read(rs, ExifDictionary)
+		tiffFile, err := tiff.Read(rs, ExifTags)
 		if err != nil {
 			return nil, err
 		}
@@ -105,13 +94,13 @@ func (f *File) parseExif() error {
 	for _, tag := range f.tiff.Tags[0] {
 		switch tag.ID() {
 		case tagID_EXIF_IFD:
-			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), ExifDictionary)
+			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), ExifTags)
 			if err != nil {
 				return fmt.Errorf("failed to read Exif IFD: %w", err)
 			}
 			f.exifTags = ifd.Tags
 		case tagID_GPS_IFD:
-			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), GPSDictionary)
+			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), GPSTags)
 			if err != nil {
 				return fmt.Errorf("failed to read GPS IFD: %w", err)
 			}
