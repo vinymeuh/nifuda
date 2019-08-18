@@ -13,7 +13,7 @@
 
 SCRIPT_DIR=$(cd $(dirname $0) && pwd)
 
-TEMPLATE_JPEG="${SCRIPT_DIR}/blank.jpg"
+TEMPLATE_JPEG="${SCRIPT_DIR}/data/jpeg.jpg"
 
 # values for tag anonymisation 
 ARTIST="Pink Panther"
@@ -25,7 +25,7 @@ if [ $# -ne 1 ]; then
 fi
 
 IMAGE_SRC="$1"
-IMAGE_TGT="${SCRIPT_DIR}/testdata/TEST_$(basename ${IMAGE_SRC})"
+IMAGE_TGT="${SCRIPT_DIR}/data/TEST_$(basename ${IMAGE_SRC})"
 
 cp "${TEMPLATE_JPEG}" "${IMAGE_TGT}"
 

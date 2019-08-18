@@ -3,34 +3,22 @@
 
 package exif
 
-/*
-Features of the Exif image file specification include the following.
+import "github.com/vinymeuh/nifuda/pkg/tiff"
 
-The file-recording format is based on existing formats.
-Compressed files are recorded as JPEG (ISO/IEC 10918-1) with application marker segments (APP1 and APP2) inserted.
-Uncompressed files are recorded in TIFF rev 6.0 format.
+const (
+	EXIF_IFD             = 34665
+	GPS_IFD              = 34853
+	INTEROPERABILITY_IFD = 40965
+)
 
-Related attribute information for both compressed and uncompressed files is stored in the tag information format defined in TIFF Rev. 6.0.
-Information specific to the camera system and not defined in TIFF is stored in private tags registered for Exif.
-
-Compressed files can record extended data exceeding 64 KBytes by dividing it into multiple APP2 segments.
-*/
-
-// APP1 consists of the APP1 marker, Exif identifier code and the attribute information itself.
-const IdentifierCode = "Exif\x00\x00"
-
-type tagDefinition struct {
-	Name string
-}
-
-// Tags definitions in order they appeared in chapter 4.6 of Exif 2.31 specification or in TIFF 6.0 specification
-var Dictionary = map[uint16]tagDefinition{
+// ExifDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
+var ExifTags = tiff.TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
-	34665: {Name: "Exif IFD"},
-	34853: {Name: "GPS IFD"},
-	40965: {Name: "Interoperability IFD"},
+	EXIF_IFD:             {Name: "Exif IFD"},
+	GPS_IFD:              {Name: "GPS IFD"},
+	INTEROPERABILITY_IFD: {Name: "Interoperability IFD"},
 
 	/****************************************************/
 	/* TIFF Rev. 6.0 Attribute Information Used in Exif */
@@ -167,78 +155,9 @@ var Dictionary = map[uint16]tagDefinition{
 	// Ratings tag used by Windows
 	18246: {Name: "Image.Rating"},
 	18249: {Name: "Image.RatingPercent"},
-
-	// TIFF/EP
-	37398: {Name: "TIFFEPStandardID"}, // See https://en.wikipedia.org/wiki/TIFF/EP
-
-	/****************************************************/
-	/* Baseline TIFF Rev. 6.0 not in Exif specification */
-	/****************************************************/
-	// Baseline Tags
-	265: {Name: "CellLength"},
-	264: {Name: "CellWidth"},
-	320: {Name: "ColorMap"},
-	338: {Name: "ExtraSamples"},
-	266: {Name: "FillOrder"},
-	289: {Name: "FreeByteCounts"},
-	288: {Name: "FreeOffsets"},
-	291: {Name: "GrayResponseCurve"},
-	290: {Name: "GrayResponseUnit"},
-	316: {Name: "HostComputer"},
-	281: {Name: "MaxSampleValue"},
-	280: {Name: "MinSampleValue"},
-	254: {Name: "NewSubfileType"},
-	255: {Name: "SubfileType"},
-	263: {Name: "Threshholding"},
-
-	/*******************/
-	/* TIFF Extensions */
-	/*******************/
-	// CCITT Bilevel Encodings
-	292: {Name: "T4Options"},
-	293: {Name: "T6Options"},
-	// Document Storage and Retrieval
-	269: {Name: "DocumentName"},
-	285: {Name: "PageName"},
-	297: {Name: "PageNumber"},
-	286: {Name: "XPosition"},
-	287: {Name: "YPosition"},
-	// Differencing Predictor
-	317: {Name: "Predictor"},
-	// Tiled Images
-	322: {Name: "TileWidth"},
-	323: {Name: "TileLength"},
-	324: {Name: "TileOffsets"},
-	325: {Name: "TileByteCounts"},
-	// CMYK Images
-	332: {Name: "InkSet"},
-	334: {Name: "NumberOfInks"},
-	333: {Name: "InkNames"},
-	336: {Name: "DotRange"},
-	337: {Name: "TargetPrinter"},
-	// Data Sample Format
-	339: {Name: "SampleFormat"},
-	340: {Name: "SMinSampleValue"},
-	341: {Name: "SMaxSampleValue"},
-	// RGB Image Colorimetry
-	342: {Name: "TransferRange"},
-	// JPEG Compression
-	512: {Name: "JPEGProc"},
-	515: {Name: "JPEGRestartInterval"},
-	517: {Name: "JPEGLosslessPredictors"},
-	518: {Name: "JPEGPointTransforms"},
-	519: {Name: "JPEGQTables"},
-	520: {Name: "JPEGDCTables"},
-	521: {Name: "JPEGACTables"},
-
-	/************************/
-	/* TIFF Technical Notes */
-	/************************/
-	// TIFF Trees
-	330: {Name: "SubIFDs"},
 }
 
-var gpsDictionary = map[uint16]tagDefinition{
+var GPSTags = tiff.TagDictionary{
 	/*****************************/
 	/* GPS Attribute Information */
 	/*****************************/
@@ -248,11 +167,4 @@ var gpsDictionary = map[uint16]tagDefinition{
 	2: {Name: "GPSLatitude"},
 	// To be completed ...
 	31: {Name: "GPSHPositioningError"},
-}
-
-var interoperabilityDictionary = map[uint16]tagDefinition{
-	/**********************************************/
-	/* Interoperability IFD Attribute Information */
-	/**********************************************/
-	1: {Name: "InteroperabilityIndex"},
 }
