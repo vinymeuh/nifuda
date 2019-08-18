@@ -1,8 +1,9 @@
 # nifuda
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/vinymeuh/nifuda.svg?branch=master)](https://travis-ci.org/vinymeuh/nifuda)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vinymeuh/nifuda)](https://goreportcard.com/report/github.com/vinymeuh/nifuda)
+[![Build Status](https://travis-ci.org/vinymeuh/nifuda.svg?branch=master)](https://travis-ci.org/vinymeuh/nifuda)
+[![codecov](https://codecov.io/gh/vinymeuh/nifuda/branch/master/graph/badge.svg)](https://codecov.io/gh/vinymeuh/nifuda)
 
 Provides (basic) decoding of image metadata for different file format.
 
