@@ -24,19 +24,19 @@ type Tag struct {
 	value TagValue
 }
 
-func (t *Tag) ID() uint16 {
+func (t Tag) ID() uint16 {
 	return t.id
 }
 
-func (t *Tag) Type() string {
+func (t Tag) Type() string {
 	return dataTypes[t.value.dataType].name
 }
 
-func (t *Tag) Name() string {
+func (t Tag) Name() string {
 	return t.name
 }
 
-func (t *Tag) Value() TagValue {
+func (t Tag) Value() TagValue {
 	return t.value
 }
 
@@ -77,8 +77,8 @@ var dataTypes = map[DataType]struct {
 }
 
 func (t Tag) String() string {
-	return fmt.Sprintf("id=%d, type=%s, count=%d, value=%s",
-		t.id, dataTypes[t.value.dataType].name, t.value.count, t.Value().String())
+	return fmt.Sprintf("id=%d, name=%s, type=%s, count=%d, value=%s",
+		t.id, t.name, dataTypes[t.value.dataType].name, t.value.count, t.Value().String())
 }
 
 func (t *Tag) decode(dict TagDictionary, bo binary.ByteOrder) {

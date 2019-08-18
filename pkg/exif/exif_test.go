@@ -31,37 +31,58 @@ func TestExifFileError(t *testing.T) {
 }
 
 func TestExifFile(t *testing.T) {
+	type testTag struct {
+		namespace string
+		name      string
+		value     string
+	}
 	tests := []struct {
 		filepath string
 		format   FileFormat
-		tagIDs   []uint16
+		tags     []testTag
 	}{
-		{"../../test/data/minimal.tif", TIFF, []uint16{257}},
-		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", JPEG, []uint16{}},
+		{"../../test/data/minimal.tif", TIFF, []testTag{
+			testTag{"ifd0", "ImageLength", "1"},
+		}},
+		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", JPEG, []testTag{
+			testTag{"ifd0", "Make", "NIKON CORPORATION"},
+			testTag{"exif", "LensMake", "NIKON"},
+		}},
 	}
 
 	for _, tc := range tests {
-		f, err := os.Open(tc.filepath)
+		osf, err := os.Open(tc.filepath)
 		if err != nil {
 			t.Fatalf("%s: opening file failed with err=%s", tc.filepath, err)
 		}
-		defer f.Close()
+		defer osf.Close()
 
-		ef, err := Read(f)
-		if err != nil || ef == nil {
-			t.Errorf("%s: reading fails, error=%s, f=%v", tc.filepath, err, ef)
+		f, err := Read(osf)
+		if err != nil || f == nil {
+			t.Errorf("%s: reading fails, error=%s, f=%v", tc.filepath, err, f)
 			continue
 		}
 
-		if ef.format != tc.format {
-			t.Errorf("%s: incorrect file format, expected=%v, got=%v", tc.filepath, tc.format, ef.format)
+		if f.format != tc.format {
+			t.Errorf("%s: incorrect file format, expected=%v, got=%v", tc.filepath, tc.format, f.format)
 		}
 
-		// for i, expected := range tc.tagIDs {
-		// 	actual := f.tiff.Tags[i].TagID
-		// 	if actual != expected {
-		// 		t.Errorf("%s: tag ID n°%d is incorrect, expected=%d, actual=%d", tc.filepath, i, expected, actual)
-		// 	}
-		// }
+		ftags := f.Tags()
+		for _, tctag := range tc.tags {
+			if _, ok := ftags[tctag.namespace]; ok == false {
+				t.Errorf("%s, %v: tag namespace not found", tc.filepath, tctag)
+				continue
+			}
+
+			if _, ok := ftags[tctag.namespace][tctag.name]; ok == false {
+				t.Errorf("%s, %v: tag name not found in namespace", tc.filepath, tctag)
+				continue
+			}
+
+			got := ftags[tctag.namespace][tctag.name].Value().String()
+			if got != tctag.value {
+				t.Errorf("%s, %v: error with tag value, expected=%s, got=%s", tc.filepath, tctag, tctag.value, got)
+			}
+		}
 	}
 }

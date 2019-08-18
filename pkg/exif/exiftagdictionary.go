@@ -6,8 +6,9 @@ package exif
 import "github.com/vinymeuh/nifuda/pkg/tiff"
 
 const (
-	tagID_EXIF_IFD = 34665
-	tagID_GPS_IFD  = 34853
+	EXIF_IFD             = 34665
+	GPS_IFD              = 34853
+	INTEROPERABILITY_IFD = 40965
 )
 
 // ExifDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
@@ -15,9 +16,9 @@ var ExifTags = tiff.TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
-	tagID_EXIF_IFD: {Name: "Exif IFD"},
-	tagID_GPS_IFD:  {Name: "GPS IFD"},
-	40965:          {Name: "Interoperability IFD"},
+	EXIF_IFD:             {Name: "Exif IFD"},
+	GPS_IFD:              {Name: "GPS IFD"},
+	INTEROPERABILITY_IFD: {Name: "Interoperability IFD"},
 
 	/****************************************************/
 	/* TIFF Rev. 6.0 Attribute Information Used in Exif */

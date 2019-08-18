@@ -93,13 +93,13 @@ func identifyFileFormat(rs io.ReadSeeker) FileFormat {
 func (f *File) parseExif() error {
 	for _, tag := range f.tiff.Tags[0] {
 		switch tag.ID() {
-		case tagID_EXIF_IFD:
+		case EXIF_IFD:
 			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), ExifTags)
 			if err != nil {
 				return fmt.Errorf("failed to read Exif IFD: %w", err)
 			}
 			f.exifTags = ifd.Tags
-		case tagID_GPS_IFD:
+		case GPS_IFD:
 			ifd, err := f.tiff.ReadIFD(tag.Value().UInt32(0), GPSTags)
 			if err != nil {
 				return fmt.Errorf("failed to read GPS IFD: %w", err)
@@ -111,10 +111,24 @@ func (f *File) parseExif() error {
 	return nil
 }
 
-func (f *File) Tags() map[string][]tiff.Tag {
-	t := make(map[string][]tiff.Tag)
-	t["ifd0"] = f.tiff.Tags[0]
-	t["exif"] = f.exifTags
-	t["gps"] = f.gpsTags
-	return t
+// Tags returns all tags indexed by namespace an tag name
+func (f *File) Tags() map[string]map[string]tiff.Tag {
+	tags := make(map[string]map[string]tiff.Tag)
+
+	tags["ifd0"] = make(map[string]tiff.Tag)
+	for _, tag := range f.tiff.Tags[0] {
+		tags["ifd0"][tag.Name()] = tag
+	}
+
+	tags["exif"] = make(map[string]tiff.Tag)
+	for _, tag := range f.exifTags {
+		tags["exif"][tag.Name()] = tag
+	}
+
+	tags["gps"] = make(map[string]tiff.Tag)
+	for _, tag := range f.gpsTags {
+		tags["gps"][tag.Name()] = tag
+	}
+
+	return tags
 }
