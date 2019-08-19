@@ -1,11 +1,53 @@
 # nifuda
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GoDoc](https://godoc.org/github.com/vinymeuh/nifuda?status.svg)](https://godoc.org/github.com/vinymeuh/nifuda)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vinymeuh/nifuda)](https://goreportcard.com/report/github.com/vinymeuh/nifuda)
 [![Build Status](https://travis-ci.org/vinymeuh/nifuda.svg?branch=master)](https://travis-ci.org/vinymeuh/nifuda)
 [![codecov](https://codecov.io/gh/vinymeuh/nifuda/branch/master/graph/badge.svg)](https://codecov.io/gh/vinymeuh/nifuda)
 
-Provides (basic) decoding of image metadata for different file format.
+`nifuda` provides a native Go library to read tags from EXIF image files.
+
+## Getting Started
+
+As a example, a very simplistic EXIF reader:
+
+```golang
+package main
+
+import (
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/vinymeuh/nifuda/pkg/exif"
+)
+
+func main() {
+    if len(os.Args) != 1 {
+        log.Fatalf("Usage: %s EXIF_FILE", os.Args[0])
+    }
+
+    osf, err := os.Open(os.Args[1])
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer osf.Close()
+
+    f, err := exif.Read(osf)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    for namespace, tags := range f.Tags() {
+        for _, tag := range tags {
+            fmt.Printf("%-6s   %-30s   %s\n", namespace, tag.Name(), tag.Value().String())
+        }
+    }
+}
+```
+
+More examples are availables in [nf-tools repository](https://github.com/vinymeuh/nf-tools).
 
 ## References
 
