@@ -13,5 +13,5 @@ var BaselineTags = TagDictionary{
 	259: {Name: "Compression"},
 	257: {Name: "ImageLength"},
 	256: {Name: "ImageWidth"},
-	// to be continued, but not sure it is very usefull ...
+	// to be continued, but not sure it is very useful ...
 }
