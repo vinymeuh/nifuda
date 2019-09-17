@@ -6,19 +6,19 @@ package exif
 import "github.com/vinymeuh/nifuda/pkg/tiff"
 
 const (
-	EXIF_IFD             = 34665
-	GPS_IFD              = 34853
-	INTEROPERABILITY_IFD = 40965
+	tagExifIfd             = 34665
+	tagGpsIfd              = 34853
+	tagInteroperabilityIfd = 40965
 )
 
-// ExifDictionary contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
-var ExifTags = tiff.TagDictionary{
+// exifTags contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
+var exifTags = tiff.TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
-	EXIF_IFD:             {Name: "Exif IFD"},
-	GPS_IFD:              {Name: "GPS IFD"},
-	INTEROPERABILITY_IFD: {Name: "Interoperability IFD"},
+	tagExifIfd:             {Name: "Exif IFD"},
+	tagGpsIfd:              {Name: "GPS IFD"},
+	tagInteroperabilityIfd: {Name: "Interoperability IFD"},
 
 	/****************************************************/
 	/* TIFF Rev. 6.0 Attribute Information Used in Exif */
@@ -157,7 +157,8 @@ var ExifTags = tiff.TagDictionary{
 	18249: {Name: "Image.RatingPercent"},
 }
 
-var GPSTags = tiff.TagDictionary{
+// gpsTags contains GPS tags definitions
+var gpsTags = tiff.TagDictionary{
 	/*****************************/
 	/* GPS Attribute Information */
 	/*****************************/

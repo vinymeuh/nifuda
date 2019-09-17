@@ -38,13 +38,13 @@ func TestExifFile(t *testing.T) {
 	}
 	tests := []struct {
 		filepath string
-		format   FileFormat
+		format   fileFormat
 		tags     []testTag
 	}{
-		{"../../test/data/minimal.tif", TIFF, []testTag{
+		{"../../test/data/minimal.tif", ffTIFF, []testTag{
 			{"ifd0", "ImageLength", "1"},
 		}},
-		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", JPEG, []testTag{
+		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", ffJPEG, []testTag{
 			{"ifd0", "Make", "NIKON CORPORATION"},
 			{"exif", "LensMake", "NIKON"},
 		}},
