@@ -1,4 +1,7 @@
 .DS_Store
+
 coverage.txt
+new.txt
+old.txt
 *.out
 *.test
