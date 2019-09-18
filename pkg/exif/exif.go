@@ -100,11 +100,12 @@ func (f *File) Tags() map[string]map[string]tiff.Tag {
 
 // a utility function to identify the type of an image file.
 func identifyFileFormat(rs io.ReadSeeker) fileFormat {
-	b := make([]byte, 2)
+	var a [2]byte
+	b := a[:]
 	rs.Read(b)
 	rs.Seek(0, io.SeekStart)
 
-	switch string(b[0:2]) {
+	switch string(b) {
 	case "\xff\xd8": // SOI
 		return ffJPEG
 	case "II", "MM":
