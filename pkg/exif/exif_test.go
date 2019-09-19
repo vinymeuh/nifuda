@@ -100,3 +100,16 @@ func BenchmarkIdentifyFileFormat(b *testing.B) {
 	}
 	format = ff
 }
+
+var fexif *File // avoid compiler optimisation
+func BenchmarkReadExifJpeg(b *testing.B) {
+	var (
+		filepath = "../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg"
+		f        *File
+	)
+	for n := 0; n < b.N; n++ {
+		osf, _ := os.Open(filepath)
+		f, _ = Read(osf)
+	}
+	fexif = f
+}
