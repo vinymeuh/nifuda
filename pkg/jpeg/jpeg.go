@@ -1,5 +1,7 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
+
+// Package jpeg implements JPEG decoding as defined in JPEG File Interchange Format version 1.02.
 package jpeg
 
 import (
@@ -8,14 +10,14 @@ import (
 	"io"
 )
 
-// A File is the result of reading a JPEG file.
-// Currently it is restricted to detect embedded Exif data
+// File represents a parsed JPEG file.
 type File struct {
 	rs          io.ReadSeeker // the JPEG data stream
 	exifSubTIFF []byte        // embedded TIFF file for Exif tags
 }
 
-// Read and parse internal structures of a JPEG file
+// Read parses JPEG data from an io.ReadSeeker.
+// Note that parsing is restricted to APP1 Exif segment, all others segments are currently ignored.
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{rs: rs}
 	err := f.readSegments()
@@ -25,7 +27,7 @@ func Read(rs io.ReadSeeker) (*File, error) {
 	return f, err
 }
 
-// ExifSubTIFF returns the embedded Exif TIFF file
+// ExifSubTIFF returns the embedded Exif TIFF file.
 func (f *File) ExifSubTIFF() []byte {
 	return f.exifSubTIFF
 }
@@ -47,7 +49,7 @@ func (f *File) readSegments() error {
 			return err
 		}
 
-		if s.Marker == APP1 && string(s.Data[0:6]) == ExifIdentifier {
+		if s.Marker == APP1 && string(s.Data[0:6]) == "Exif\x00\x00" {
 			f.exifSubTIFF = s.Data[6:]
 			break
 		}

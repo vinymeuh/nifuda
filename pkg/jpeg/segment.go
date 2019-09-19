@@ -1,5 +1,6 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
+
 package jpeg
 
 import (
@@ -89,9 +90,6 @@ const (
 	JPG13 Marker = 0xfd
 	COM   Marker = 0xfe
 )
-
-// ExifIdentifier code is used to identify APP1 Segment as Exif data
-const ExifIdentifier = "Exif\x00\x00"
 
 func nextSegment(r io.Reader) (*Segment, error) {
 	buf := make([]byte, 2) // used to read marker & length
