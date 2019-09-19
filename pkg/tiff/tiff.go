@@ -1,7 +1,7 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
 
-// Package tiff implements TIFF decoding as defined in TIFF revision 6.0 specification
+// Package tiff implements TIFF decoding as defined in TIFF revision 6.0 specification.
 package tiff
 
 import (
@@ -12,21 +12,18 @@ import (
 	"io"
 )
 
-/*
-TIFF is an image file format built on three kind of structure:
-  * a unique Image File Header (IFH)
-  * Image File Directories (IFD), each containing information about the image as well as pointers its bitmap data
-  * Bitmap Data
+// TIFF is an image file format built on three kind of structure:
+//   * a unique Image File Header (IFH)
+//   * Image File Directories (IFD), each containing information about the image as well as pointers its bitmap data
+//   * Bitmap Data
+//
+// Each IFD and its associated bitmap are sometimes called a TIFF subfile.
+// There is no limit to the number of subfiles a TIFF image file may contain.
+//
+// IFH contains pointer to the first IFD (IFD0).
+// A valid TIFF file only require the IFH and IFD0.
 
-Each IFD and its associated bitmap are sometimes called a TIFF subfile.
-There is no limit to the number of subfiles a TIFF image file may contain.
-
-IFH contains pointer to the first IFD (IFD0).
-
-A valid TIFF file only require the IFH and IFD0.
-*/
-
-// File
+// File represents a parsed TIFF file.
 type File struct {
 	rs io.ReadSeeker
 	// Image File Header
@@ -36,6 +33,8 @@ type File struct {
 	Tags    [][]Tag
 }
 
+// Read parses TIFF data from an io.ReadSeeker.
+// Tags are interpreted according to provided tags dictionary.
 func Read(rs io.ReadSeeker, dict TagDictionary) (*File, error) {
 	f := &File{rs: rs}
 	if err := f.readIFH(); err != nil {
