@@ -38,7 +38,7 @@ func (f *File) readSegments() error {
 	if err != nil {
 		return fmt.Errorf("unable to read SOI: %w", err)
 	}
-	if s0.Marker != SOI {
+	if s0.marker != mSOI {
 		return errors.New("first segment must be SOI")
 	}
 
@@ -49,12 +49,12 @@ func (f *File) readSegments() error {
 			return err
 		}
 
-		if s.Marker == APP1 && string(s.Data[0:6]) == "Exif\x00\x00" {
-			f.exifSubTIFF = s.Data[6:]
+		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
+			f.exifSubTIFF = s.data[6:]
 			break
 		}
 
-		if s.Marker == EOI || s.Marker == SOS { // don't know how to process after SOS marker
+		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker
 			break
 		}
 	}

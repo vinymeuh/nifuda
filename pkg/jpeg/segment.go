@@ -11,87 +11,87 @@ import (
 	"io"
 )
 
-// Segment is the data structure implementation for JPEG Segment
-type Segment struct {
+// segment is the data structure implementation for JPEG Segment
+type segment struct {
 	// marker begins with a 0xff byte followed by a byte indicating what kind of marker it is
-	Marker Marker
+	marker marker
 	// length of the data, includes the two bytes for the length but not the two bytes for the marker (big endian)
 	length uint16
 	// payload data
-	Data []byte
+	data []byte
 }
 
-// Marker is the type for JPEG segment markers
-type Marker byte
+// marker is the type for JPEG segment markers
+type marker byte
 
 // List of JPEG markers (from https://www.disktuna.com/list-of-jpeg-markers/)
 const (
-	SOF0  Marker = 0xc0
-	SOF1  Marker = 0xc1
-	SOF2  Marker = 0xc2
-	SOF3  Marker = 0xc3
-	DHT   Marker = 0xc4
-	SOF5  Marker = 0xc5
-	SOF6  Marker = 0xc6
-	SOF7  Marker = 0xc7
-	JPG   Marker = 0xc8
-	SOF9  Marker = 0xc9
-	SOF10 Marker = 0xca
-	SOF11 Marker = 0xcb
-	DAC   Marker = 0xcc
-	SOF13 Marker = 0xcd
-	SOF14 Marker = 0xce
-	SOF15 Marker = 0xcf
-	RST0  Marker = 0xd0
-	RST1  Marker = 0xd1
-	RST2  Marker = 0xd2
-	RST3  Marker = 0xd3
-	RST4  Marker = 0xd4
-	RST5  Marker = 0xd5
-	RST6  Marker = 0xd6
-	RST7  Marker = 0xd7
-	SOI   Marker = 0xd8
-	EOI   Marker = 0xd9
-	SOS   Marker = 0xda
-	DQT   Marker = 0xdb
-	DNL   Marker = 0xdc
-	DRI   Marker = 0xdd
-	DHP   Marker = 0xde
-	EXP   Marker = 0xdf
-	APP0  Marker = 0xe0
-	APP1  Marker = 0xe1
-	APP2  Marker = 0xe2
-	APP3  Marker = 0xe3
-	APP4  Marker = 0xe4
-	APP5  Marker = 0xe5
-	APP6  Marker = 0xe6
-	APP7  Marker = 0xe7
-	APP8  Marker = 0xe8
-	APP9  Marker = 0xe9
-	APP10 Marker = 0xea
-	APP11 Marker = 0xeb
-	APP12 Marker = 0xec
-	APP13 Marker = 0xed
-	APP14 Marker = 0xee
-	APP15 Marker = 0xef
-	JPG0  Marker = 0xf0
-	JPG1  Marker = 0xf1
-	JPG2  Marker = 0xf2
-	JPG3  Marker = 0xf3
-	JPG4  Marker = 0xf4
-	JPG5  Marker = 0xf5
-	JPG6  Marker = 0xf6
-	JPG7  Marker = 0xf7
-	JPG8  Marker = 0xf8
-	JPG9  Marker = 0xf9
-	JPG10 Marker = 0xfa
-	JPG11 Marker = 0xfb
-	JPG12 Marker = 0xfc
-	JPG13 Marker = 0xfd
-	COM   Marker = 0xfe
+	mSOF0  marker = 0xc0
+	mSOF1  marker = 0xc1
+	mSOF2  marker = 0xc2
+	mSOF3  marker = 0xc3
+	mDHT   marker = 0xc4
+	mSOF5  marker = 0xc5
+	mSOF6  marker = 0xc6
+	mSOF7  marker = 0xc7
+	mJPG   marker = 0xc8
+	mSOF9  marker = 0xc9
+	mSOF10 marker = 0xca
+	mSOF11 marker = 0xcb
+	mDAC   marker = 0xcc
+	mSOF13 marker = 0xcd
+	mSOF14 marker = 0xce
+	mSOF15 marker = 0xcf
+	mRST0  marker = 0xd0
+	mRST1  marker = 0xd1
+	mRST2  marker = 0xd2
+	mRST3  marker = 0xd3
+	mRST4  marker = 0xd4
+	mRST5  marker = 0xd5
+	mRST6  marker = 0xd6
+	mRST7  marker = 0xd7
+	mSOI   marker = 0xd8
+	mEOI   marker = 0xd9
+	mSOS   marker = 0xda
+	mDQT   marker = 0xdb
+	mDNL   marker = 0xdc
+	mDRI   marker = 0xdd
+	mDHP   marker = 0xde
+	mEXP   marker = 0xdf
+	mAPP0  marker = 0xe0
+	mAPP1  marker = 0xe1
+	mAPP2  marker = 0xe2
+	mAPP3  marker = 0xe3
+	mAPP4  marker = 0xe4
+	mAPP5  marker = 0xe5
+	mAPP6  marker = 0xe6
+	mAPP7  marker = 0xe7
+	mAPP8  marker = 0xe8
+	mAPP9  marker = 0xe9
+	mAPP10 marker = 0xea
+	mAPP11 marker = 0xeb
+	mAPP12 marker = 0xec
+	mAPP13 marker = 0xed
+	mAPP14 marker = 0xee
+	mAPP15 marker = 0xef
+	mJPG0  marker = 0xf0
+	mJPG1  marker = 0xf1
+	mJPG2  marker = 0xf2
+	mJPG3  marker = 0xf3
+	mJPG4  marker = 0xf4
+	mJPG5  marker = 0xf5
+	mJPG6  marker = 0xf6
+	mJPG7  marker = 0xf7
+	mJPG8  marker = 0xf8
+	mJPG9  marker = 0xf9
+	mJPG10 marker = 0xfa
+	mJPG11 marker = 0xfb
+	mJPG12 marker = 0xfc
+	mJPG13 marker = 0xfd
+	mCOM   marker = 0xfe
 )
 
-func nextSegment(r io.Reader) (*Segment, error) {
+func nextSegment(r io.Reader) (*segment, error) {
 	buf := make([]byte, 2) // used to read marker & length
 
 	// marker
@@ -101,9 +101,9 @@ func nextSegment(r io.Reader) (*Segment, error) {
 	if buf[0] != 0xff {
 		return nil, errors.New("invalid segment marker")
 	}
-	s := &Segment{Marker: Marker(buf[1])}
+	s := &segment{marker: marker(buf[1])}
 
-	if s.Marker == SOI || s.Marker == EOI {
+	if s.marker == mSOI || s.marker == mEOI {
 		return s, nil
 	}
 
@@ -114,10 +114,10 @@ func nextSegment(r io.Reader) (*Segment, error) {
 	binary.Read(bytes.NewReader(buf), binary.BigEndian, &s.length)
 
 	// data
-	s.Data = make([]byte, s.length-2)
+	s.data = make([]byte, s.length-2)
 	read := 0
 	for read < int(s.length)-2 {
-		n, err := r.Read(s.Data[read:])
+		n, err := r.Read(s.data[read:])
 		if err != nil {
 			return nil, fmt.Errorf("failed to read segment data: %w", err)
 		}
