@@ -14,6 +14,7 @@ func TestJpegFileMustReturnError(t *testing.T) {
 		{"../../test/data/empty.txt"},
 		{"../../test/data/dummy.txt"},
 		{"../../test/data/nosoi.jpg"},
+		{"../../test/data/minimal.jpg"},
 	}
 
 	for _, tc := range tests {
@@ -35,7 +36,6 @@ func TestJpegFile(t *testing.T) {
 		filepath string
 		hasExif  bool
 	}{
-		{"../../test/data/minimal.jpg", false},
 		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", true},
 	}
 
