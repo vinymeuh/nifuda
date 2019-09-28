@@ -33,6 +33,19 @@ type File struct {
 	Tags    [][]Tag
 }
 
+// An Image File Directory (IFD) consists of a 2-byte count of the number of directory entries, followed by a
+// sequence of 12-byte field entries, followed by a 4-byte offset of the next IFD (or 0 if none).
+//
+// There must be at least 1 IFD in a TIFF file and each IFD must have at least one entry.
+//
+// Each TIFF field has an associated Count.
+// This means that all fields are actually one-dimensional arrays, even though most fields contain only a single value.
+type ifd struct {
+	entries uint16 // number of directory entries
+	Tags    []Tag  // array of 12-byte Tags entries
+	next    uint32 // offset in bytes to the next IFD, from the start of the file. 0 if none
+}
+
 // Read parses TIFF data from an io.ReadSeeker.
 // Tags are interpreted according to provided tags dictionary.
 func Read(rs io.ReadSeeker, dict TagDictionary) (*File, error) {
@@ -83,7 +96,7 @@ func (f *File) readIFH() error {
 // ReadIFDs read all IFDs starting from IFD0 at f.offset0
 func (f *File) readIFDs(dict TagDictionary) error {
 
-	ifds := make([]*ifd, 0)
+	f.Tags = make([][]Tag, 0)
 
 	previous := uint32(0)
 	next := f.offset0
@@ -100,17 +113,11 @@ func (f *File) readIFDs(dict TagDictionary) error {
 			if err != nil {
 				return fmt.Errorf("failed to read ifd%d: %w", i, err)
 			}
-			ifds = append(ifds, ifd)
+			f.Tags = append(f.Tags, ifd.Tags)
 			previous = next
 			next = ifd.next
 			i++
 		}
-	}
-
-	// Copy tags to File structure
-	f.Tags = make([][]Tag, len(ifds))
-	for i, ifd := range ifds {
-		f.Tags[i] = ifd.Tags
 	}
 	return nil
 }

@@ -12,51 +12,41 @@ import (
 
 // File represents a parsed JPEG file.
 type File struct {
-	rs          io.ReadSeeker // the JPEG data stream
-	exifSubTIFF []byte        // embedded TIFF file for Exif tags
+	exifSubTIFF []byte // embedded TIFF file for Exif tags
 }
 
-// Read parses JPEG data from an io.ReadSeeker.
-// Note that parsing is restricted to APP1 Exif segment, all others segments are currently ignored.
+// Read parses JPEG from an io.ReadSeeker to retrieve Exif tags.
+// Returns an error if no Exif data found.
 func Read(rs io.ReadSeeker) (*File, error) {
-	f := &File{rs: rs}
-	err := f.readSegments()
+	// ensure we have a SOI
+	s0, err := nextSegment(rs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to read SOI: %w", err)
 	}
-	return f, err
+	if s0.marker != mSOI {
+		return nil, errors.New("first segment must be SOI")
+	}
+
+	// next segments until we have found APP1 Exif
+	f := File{}
+	for {
+		s, err := nextSegment(rs)
+		if err != nil {
+			return nil, err
+		}
+
+		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
+			f.exifSubTIFF = s.data[6:]
+			return &f, nil
+		}
+
+		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker
+			return nil, errors.New("no Exif data found")
+		}
+	}
 }
 
 // ExifSubTIFF returns the embedded Exif TIFF file.
 func (f *File) ExifSubTIFF() []byte {
 	return f.exifSubTIFF
-}
-
-func (f *File) readSegments() error {
-	// ensure we have a SOI
-	s0, err := nextSegment(f.rs)
-	if err != nil {
-		return fmt.Errorf("unable to read SOI: %w", err)
-	}
-	if s0.marker != mSOI {
-		return errors.New("first segment must be SOI")
-	}
-
-	// next segments until we have found APP1 Exif
-	for {
-		s, err := nextSegment(f.rs)
-		if err != nil {
-			return err
-		}
-
-		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
-			f.exifSubTIFF = s.data[6:]
-			break
-		}
-
-		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker
-			break
-		}
-	}
-	return nil
 }
