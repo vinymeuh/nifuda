@@ -28,8 +28,8 @@ func TestTiffFileMustReturnError(t *testing.T) {
 		defer osf.Close()
 
 		f, err := Read(osf, nil)
-		if err == nil || f != nil {
-			t.Errorf("%s: reading file should have failed and returned nil, err=%s, f=%v", tc.filepath, err, f)
+		if err == nil {
+			t.Errorf("%s: reading file should have failed, err=%s, f=%v", tc.filepath, err, f)
 		}
 	}
 }
@@ -56,4 +56,16 @@ func TestTiffFile(t *testing.T) {
 		}
 
 	}
+}
+
+func BenchmarkReadTiff(b *testing.B) {
+	var (
+		filepath = "../../test/data/TEST_2019-07-21_132615_DSC_0361.NEF"
+		f        *File
+	)
+	for n := 0; n < b.N; n++ {
+		osf, _ := os.Open(filepath)
+		f, _ = Read(osf, nil)
+	}
+	_ = f
 }
