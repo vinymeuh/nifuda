@@ -8,8 +8,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/vinymeuh/nifuda/pkg/jpeg"
-	"github.com/vinymeuh/nifuda/pkg/tiff"
+	"github.com/vinymeuh/nifuda/internal/jpeg"
+	"github.com/vinymeuh/nifuda/internal/tiff"
 )
 
 // Features of the Exif image file specification include the following:
@@ -22,7 +22,6 @@ import (
 
 // File represents a parsed EXIF file.
 type File struct {
-	jpeg   *jpeg.File
 	tiff   *tiff.File // "real" TIFF file or the one embedded in JPEG APP1 segment
 	format fileFormat
 }
@@ -39,16 +38,21 @@ const (
 // If successful, the returned file can be used to access EXIF tags.
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{}
-	var err error
 
-	format := identifyFileFormat(rs)
-	switch format {
-	case ffJPEG:
+	var a [2]byte
+	b := a[:]
+	rs.Read(b)
+	rs.Seek(0, io.SeekStart)
+
+	switch string(b) {
+	case "\xff\xd8": // SOI
 		f.format = ffJPEG
-		f.jpeg, err = jpeg.Read(rs)
+		jpf, err := jpeg.Read(rs)
+		f.tiff = jpf.File
 		return f, err
-	case ffTIFF:
+	case "II", "MM":
 		f.format = ffTIFF
+		var err error
 		f.tiff, err = tiff.Read(rs)
 		return f, err
 	default:
@@ -63,45 +67,15 @@ func (f *File) Tags() map[string]map[string]tiff.Tag {
 	tags["exif"] = make(map[string]tiff.Tag)
 	tags["gps"] = make(map[string]tiff.Tag)
 
-	switch f.format {
-	case ffJPEG:
-		for _, tag := range f.jpeg.Ifd0() {
-			tags["ifd0"][tag.Name()] = tag
-		}
-		for _, tag := range f.jpeg.Exif() {
-			tags["exif"][tag.Name()] = tag
-		}
-		for _, tag := range f.jpeg.Gps() {
-			tags["gps"][tag.Name()] = tag
-		}
-	case ffTIFF:
-		for _, tag := range f.tiff.Ifd0() {
-			tags["ifd0"][tag.Name()] = tag
-		}
-		for _, tag := range f.tiff.Exif() {
-			tags["exif"][tag.Name()] = tag
-		}
-		for _, tag := range f.tiff.Gps() {
-			tags["gps"][tag.Name()] = tag
-		}
+	for _, tag := range f.tiff.Ifd0() {
+		tags["ifd0"][tag.Name()] = tag
+	}
+	for _, tag := range f.tiff.Exif() {
+		tags["exif"][tag.Name()] = tag
+	}
+	for _, tag := range f.tiff.Gps() {
+		tags["gps"][tag.Name()] = tag
 	}
 
 	return tags
-}
-
-// a utility function to identify the type of an image file.
-func identifyFileFormat(rs io.ReadSeeker) fileFormat {
-	var a [2]byte
-	b := a[:]
-	rs.Read(b)
-	rs.Seek(0, io.SeekStart)
-
-	switch string(b) {
-	case "\xff\xd8": // SOI
-		return ffJPEG
-	case "II", "MM":
-		return ffTIFF
-	default:
-		return ffUNKNOWN
-	}
 }

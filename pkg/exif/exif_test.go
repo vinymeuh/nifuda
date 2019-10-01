@@ -4,7 +4,6 @@
 package exif
 
 import (
-	"bytes"
 	"os"
 	"testing"
 )
@@ -86,19 +85,6 @@ func TestExifFile(t *testing.T) {
 			}
 		}
 	}
-}
-
-var format fileFormat // avoid compiler optimisation
-func BenchmarkIdentifyFileFormat(b *testing.B) {
-	var (
-		benchData = []byte{0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00}
-		ff        fileFormat
-	)
-	rs := bytes.NewReader(benchData)
-	for n := 0; n < b.N; n++ {
-		ff = identifyFileFormat(rs)
-	}
-	format = ff
 }
 
 func BenchmarkReadExifJpeg(b *testing.B) {
