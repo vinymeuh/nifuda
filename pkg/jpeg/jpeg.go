@@ -5,14 +5,17 @@
 package jpeg
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/vinymeuh/nifuda/pkg/tiff"
 )
 
 // File represents a parsed JPEG file.
 type File struct {
-	exifSubTIFF []byte // embedded TIFF file for Exif tags
+	*tiff.File // embedded TIFF file for Exif tags
 }
 
 // Read parses JPEG from an io.ReadSeeker to retrieve Exif tags.
@@ -36,17 +39,12 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		}
 
 		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
-			f.exifSubTIFF = s.data[6:]
-			return &f, nil
+			f.File, err = tiff.Read(bytes.NewReader(s.data[6:]))
+			return &f, err
 		}
 
 		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker
 			return nil, errors.New("no Exif data found")
 		}
 	}
-}
-
-// ExifSubTIFF returns the embedded Exif TIFF file.
-func (f *File) ExifSubTIFF() []byte {
-	return f.exifSubTIFF
 }

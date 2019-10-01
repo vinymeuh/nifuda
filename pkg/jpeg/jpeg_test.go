@@ -52,10 +52,10 @@ func TestJpegFile(t *testing.T) {
 			continue
 		}
 
-		if tc.hasExif == false && f.ExifSubTIFF() != nil {
+		if tc.hasExif == false && f.Exif() != nil {
 			t.Errorf("%s: invalid ExifSubTIFF detected", tc.filepath)
 		}
-		if tc.hasExif == true && f.ExifSubTIFF() == nil {
+		if tc.hasExif == true && (f.Exif() == nil || len(f.Exif()) == 0) {
 			t.Errorf("%s: should have detected ExifSubTIFF", tc.filepath)
 		}
 	}

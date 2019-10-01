@@ -30,7 +30,10 @@ type File struct {
 	bo      binary.ByteOrder // byte order used within the file
 	version uint16           // always "42"
 	offset0 uint32           // offset in bytes for IFD0, from the start of the file
-	Tags    [][]Tag
+	ifd0    []Tag
+	exif    []Tag
+	gps     []Tag
+	err     []error
 }
 
 // An Image File Directory (IFD) consists of a 2-byte count of the number of directory entries, followed by a
@@ -41,26 +44,43 @@ type File struct {
 // Each TIFF field has an associated Count.
 // This means that all fields are actually one-dimensional arrays, even though most fields contain only a single value.
 type ifd struct {
-	entries uint16 // number of directory entries
-	Tags    []Tag  // array of 12-byte Tags entries
 	next    uint32 // offset in bytes to the next IFD, from the start of the file. 0 if none
+	entries uint16 // number of directory entries
+	data    []byte
 }
 
 // Read parses TIFF data from an io.ReadSeeker.
 // Tags are interpreted according to provided tags dictionary.
-func Read(rs io.ReadSeeker, dict TagDictionary) (*File, error) {
+func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{rs: rs}
 	if err := f.readIFH(); err != nil {
 		return nil, err
 	}
-	err := f.readIFDs(dict)
-	if err != nil && len(f.Tags) == 0 { // failed to read ifd0
+
+	err := f.readIFD0()
+	if err != nil && len(f.ifd0) == 0 { // failed to read ifd0
 		return nil, err
 	}
+
 	return f, err
 }
 
-// ReadIFH read the TIFF Header
+// Ifd0 returns Exif Tags from first IFD
+func (f *File) Ifd0() []Tag {
+	return f.ifd0
+}
+
+// Exif returns Exif Tags from Exif IFD
+func (f *File) Exif() []Tag {
+	return f.exif
+}
+
+// Gps returns Exif Tags from Exif IFD
+func (f *File) Gps() []Tag {
+	return f.gps
+}
+
+// readIFH reads the TIFF Header
 func (f *File) readIFH() error {
 	header := make([]byte, 8)
 	if _, err := f.rs.Read(header); err != nil {
@@ -93,86 +113,92 @@ func (f *File) readIFH() error {
 	return nil
 }
 
-// ReadIFDs read all IFDs starting from IFD0 at f.offset0
-func (f *File) readIFDs(dict TagDictionary) error {
+// readID0 reads the first IFD and decode it as Exif data
+func (f *File) readIFD0() error {
+	ifd0, err := f.readIFD(f.offset0)
+	if err != nil {
+		return err
+	}
+	f.ifd0 = f.parseIFDTags(ifd0, dictExif)
 
-	f.Tags = make([][]Tag, 0)
-
-	previous := uint32(0)
-	next := f.offset0
-	i := 0
-	for {
-		if next == 0 { // break the infinite loop
-			break
-		}
-		switch next {
-		case previous:
-			return errors.New("recursive ifd")
-		default:
-			ifd, err := f.ReadIFD(next, dict)
+	// Exif IFD
+	for _, tag := range f.ifd0 {
+		if tag.ID() == tagExifIfd {
+			exifIFD, err := f.readIFD(tag.Value().UInt32(0))
 			if err != nil {
-				return fmt.Errorf("failed to read ifd%d: %w", i, err)
+				return err
 			}
-			f.Tags = append(f.Tags, ifd.Tags)
-			previous = next
-			next = ifd.next
-			i++
+			f.exif = f.parseIFDTags(exifIFD, dictExif)
+		}
+		if tag.ID() == tagGpsIfd {
+			gpsIFD, err := f.readIFD(tag.Value().UInt32(0))
+			if err != nil {
+				return err
+			}
+			f.gps = f.parseIFDTags(gpsIFD, dictGps)
 		}
 	}
+
 	return nil
 }
 
-// ReadIFD read the IFD that start at offset
-func (f *File) ReadIFD(offset uint32, dict TagDictionary) (*ifd, error) {
+// readIFD read the IFD starting at offset
+func (f *File) readIFD(offset uint32) (*ifd, error) {
 	f.rs.Seek(int64(offset), io.SeekStart)
-	ifd := &ifd{}
+	ifd := ifd{}
 
 	// read the number of entries
 	entries := make([]byte, 2)
 	if _, err := f.rs.Read(entries); err != nil {
-		return ifd, fmt.Errorf("failed to read 2 bytes: %w", err)
+		return &ifd, fmt.Errorf("failed to read 2 bytes: %w", err)
 	}
 	binary.Read(bytes.NewReader(entries), f.bo, &ifd.entries)
 
-	// read the array of Tags
-	data := make([]byte, 12*ifd.entries)
-	if _, err := f.rs.Read(data); err != nil {
-		return ifd, fmt.Errorf("failed to read %d bytes: %w", 12*ifd.entries, err)
+	// read the data
+	ifd.data = make([]byte, 12*ifd.entries)
+	if _, err := f.rs.Read(ifd.data); err != nil {
+		return &ifd, fmt.Errorf("failed to read %d bytes: %w", 12*ifd.entries, err)
 	}
 
 	// read offset for next IFD
 	next := make([]byte, 4)
 	if _, err := f.rs.Read(next); err != nil {
-		return ifd, fmt.Errorf("failed to read 4 bytes: %w", err)
+		return &ifd, fmt.Errorf("failed to read 4 bytes: %w", err)
 	}
 	binary.Read(bytes.NewReader(next), f.bo, &ifd.next)
 
-	// Decode tags in the array of Tags
+	return &ifd, nil
+}
+
+// parseIFDTags parse IFD data and decode it using dict dictionary
+func (f *File) parseIFDTags(ifd *ifd, dict TagDictionary) []Tag {
+	tags := make([]Tag, ifd.entries)
+
 	for i := 0; i < int(ifd.entries); i++ {
 		tag := Tag{}
 
-		binary.Read(bytes.NewReader(data[12*i:12*i+2]), f.bo, &tag.id)
-		binary.Read(bytes.NewReader(data[12*i+2:12*i+4]), f.bo, &tag.value.dataType)
-		binary.Read(bytes.NewReader(data[12*i+4:12*i+8]), f.bo, &tag.value.count)
+		binary.Read(bytes.NewReader(ifd.data[12*i:12*i+2]), f.bo, &tag.id)
+		binary.Read(bytes.NewReader(ifd.data[12*i+2:12*i+4]), f.bo, &tag.value.dataType)
+		binary.Read(bytes.NewReader(ifd.data[12*i+4:12*i+8]), f.bo, &tag.value.count)
 
 		length := dataTypes[tag.value.dataType].size * tag.value.count
 		if length <= 4 {
-			tag.value.raw = data[12*i+8 : 12*i+8+int(length)]
+			tag.value.raw = ifd.data[12*i+8 : 12*i+8+int(length)]
 		} else {
 			var offset uint32
-			binary.Read(bytes.NewReader(data[12*i+8:12*i+12]), f.bo, &offset)
+			binary.Read(bytes.NewReader(ifd.data[12*i+8:12*i+12]), f.bo, &offset)
 			tag.value.raw = make([]byte, length)
 			if _, err := f.rs.Seek(int64(offset), io.SeekStart); err != nil {
-				return ifd, fmt.Errorf("failed to seek of %d bytes: %w", offset, err)
+				//return ifd, fmt.Errorf("failed to seek of %d bytes: %w", offset, err)
+				return tags
 			}
 			if _, err := f.rs.Read(tag.value.raw); err != nil {
-				return ifd, fmt.Errorf("failed to read field value: %w", err)
+				//return ifd, fmt.Errorf("failed to read field value: %w", err)
+				return tags
 			}
 		}
-
 		tag.decode(dict, f.bo)
-		ifd.Tags = append(ifd.Tags, tag)
+		tags[i] = tag
 	}
-
-	return ifd, nil
+	return tags
 }

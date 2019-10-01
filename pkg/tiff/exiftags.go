@@ -1,9 +1,7 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
 
-package exif
-
-import "github.com/vinymeuh/nifuda/pkg/tiff"
+package tiff
 
 const (
 	tagExifIfd             = 34665
@@ -12,7 +10,7 @@ const (
 )
 
 // exifTags contains Exif tags definitions (in order they appeared in chapter 4.6 of Exif 2.31)
-var exifTags = tiff.TagDictionary{
+var dictExif = TagDictionary{
 	/*********************/
 	/* Exif-specific IFD */
 	/*********************/
@@ -158,7 +156,7 @@ var exifTags = tiff.TagDictionary{
 }
 
 // gpsTags contains GPS tags definitions
-var gpsTags = tiff.TagDictionary{
+var dictGps = TagDictionary{
 	/*****************************/
 	/* GPS Attribute Information */
 	/*****************************/

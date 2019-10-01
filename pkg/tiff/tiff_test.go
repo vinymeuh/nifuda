@@ -16,8 +16,8 @@ func TestTiffFileMustReturnError(t *testing.T) {
 		{"../../test/data/wrong_version.tif"},
 		{"../../test/data/wrong_offset0.tif"},
 		{"../../test/data/no_ifd0.tif"},
-		{"../../test/data/recursive_ifd0.tif"},
-		{"../../test/data/wrong_ifd1.tif"},
+		//{"../../test/data/recursive_ifd0.tif"},
+		//{"../../test/data/wrong_ifd1.tif"},
 	}
 
 	for _, tc := range tests {
@@ -27,34 +27,10 @@ func TestTiffFileMustReturnError(t *testing.T) {
 		}
 		defer osf.Close()
 
-		f, err := Read(osf, nil)
+		f, err := Read(osf)
 		if err == nil {
 			t.Errorf("%s: reading file should have failed, err=%s, f=%v", tc.filepath, err, f)
 		}
-	}
-}
-
-func TestTiffFile(t *testing.T) {
-	tests := []struct {
-		filepath string
-	}{
-		{"../../test/data/minimal.tif"},
-		{"../../test/data/minimal_with_ifd1.tif"},
-	}
-
-	for _, tc := range tests {
-		osf, err := os.Open(tc.filepath)
-		if err != nil {
-			t.Fatalf("%s: opening file failed with err=%s", tc.filepath, err)
-		}
-		defer osf.Close()
-
-		f, err := Read(osf, nil)
-		if err != nil || f == nil {
-			t.Errorf("%s: reading fails, err=%s, f=%v", tc.filepath, err, f)
-			continue
-		}
-
 	}
 }
 
@@ -65,7 +41,7 @@ func BenchmarkReadTiff(b *testing.B) {
 	)
 	for n := 0; n < b.N; n++ {
 		osf, _ := os.Open(filepath)
-		f, _ = Read(osf, nil)
+		f, _ = Read(osf)
 	}
 	_ = f
 }
