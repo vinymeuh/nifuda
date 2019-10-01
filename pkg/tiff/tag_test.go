@@ -34,7 +34,7 @@ func TestTagDecode(t *testing.T) {
 			id:    tc.id,
 			value: TagValue{dataType: tc.dtType, count: tc.dtCount, raw: tc.dtRaw},
 		}
-		tag.decode(BaselineTags, binary.BigEndian)
+		tag.decode(dictExif, binary.BigEndian)
 
 		if tag.ID() != tc.id {
 			t.Errorf("[%s]: error decoding tag id, expected=%d, got=%d", tag, tc.id, tag.ID())

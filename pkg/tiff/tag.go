@@ -9,6 +9,10 @@ import (
 	"fmt"
 )
 
+type TagDictionary map[uint16]struct {
+	Name string
+}
+
 /*
 A Tag is a 12-byte record containing TagID identifying the type of information the tag contains and its value.
 
