@@ -5,6 +5,8 @@ package jpeg
 import (
 	"os"
 	"testing"
+
+	"github.com/vinymeuh/nifuda/internal/tiff"
 )
 
 func TestJpegFileMustReturnError(t *testing.T) {
@@ -64,7 +66,7 @@ func TestJpegFile(t *testing.T) {
 func BenchmarkReadJpeg(b *testing.B) {
 	var (
 		filepath = "../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg"
-		f        *File
+		f        *tiff.File
 	)
 	for n := 0; n < b.N; n++ {
 		osf, _ := os.Open(filepath)

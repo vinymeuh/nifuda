@@ -38,13 +38,12 @@ func TestExifFile(t *testing.T) {
 	}
 	tests := []struct {
 		filepath string
-		format   fileFormat
 		tags     []testTag
 	}{
-		{"../../test/data/minimal.tif", ffTIFF, []testTag{
+		{"../../test/data/minimal.tif", []testTag{
 			{"ifd0", "ImageLength", "1"},
 		}},
-		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", ffJPEG, []testTag{
+		{"../../test/data/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg", []testTag{
 			{"ifd0", "Make", "NIKON CORPORATION"},
 			{"exif", "LensMake", "NIKON"},
 		}},
@@ -61,10 +60,6 @@ func TestExifFile(t *testing.T) {
 		if err != nil || f == nil {
 			t.Errorf("%s: reading fails, error=%s, f=%v", tc.filepath, err, f)
 			continue
-		}
-
-		if f.format != tc.format {
-			t.Errorf("%s: incorrect file format, expected=%v, got=%v", tc.filepath, tc.format, f.format)
 		}
 
 		ftags := f.Tags()

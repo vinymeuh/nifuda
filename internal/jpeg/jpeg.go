@@ -14,14 +14,9 @@ import (
 	"github.com/vinymeuh/nifuda/internal/tiff"
 )
 
-// File represents a parsed JPEG file.
-type File struct {
-	*tiff.File // embedded TIFF file for Exif tags
-}
-
-// Read parses JPEG from an io.ReadSeeker to retrieve Exif tags.
+// Read parses JPEG from an io.ReadSeeker to retrieve embedded Tiff file hosting Exif tags.
 // Returns an error if no Exif data found.
-func Read(rs io.ReadSeeker) (*File, error) {
+func Read(rs io.ReadSeeker) (*tiff.File, error) {
 	// ensure we have a SOI
 	s0, err := nextSegment(rs)
 	if err != nil {
@@ -32,7 +27,6 @@ func Read(rs io.ReadSeeker) (*File, error) {
 	}
 
 	// next segments until we have found APP1 Exif
-	f := File{}
 	for {
 		s, err := nextSegment(rs)
 		if err != nil {
@@ -40,8 +34,8 @@ func Read(rs io.ReadSeeker) (*File, error) {
 		}
 
 		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
-			f.File, err = tiff.Read(bytes.NewReader(s.data[6:]))
-			return &f, err
+			f, err := tiff.Read(bytes.NewReader(s.data[6:]))
+			return f, err
 		}
 
 		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker

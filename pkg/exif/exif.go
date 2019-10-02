@@ -22,22 +22,14 @@ import (
 
 // File represents a parsed EXIF file.
 type File struct {
-	tiff   *tiff.File // "real" TIFF file or the one embedded in JPEG APP1 segment
-	format fileFormat
+	tiff *tiff.File // "real" TIFF file or the one embedded in JPEG APP1 segment
 }
-
-type fileFormat int
-
-const (
-	ffJPEG fileFormat = iota
-	ffTIFF
-	ffUNKNOWN
-)
 
 // Read parses EXIF data from an io.ReadSeeker.
 // If successful, the returned file can be used to access EXIF tags.
 func Read(rs io.ReadSeeker) (*File, error) {
 	f := &File{}
+	var err error
 
 	var a [2]byte
 	b := a[:]
@@ -46,13 +38,9 @@ func Read(rs io.ReadSeeker) (*File, error) {
 
 	switch string(b) {
 	case "\xff\xd8": // SOI
-		f.format = ffJPEG
-		jpf, err := jpeg.Read(rs)
-		f.tiff = jpf.File
+		f.tiff, err = jpeg.Read(rs)
 		return f, err
 	case "II", "MM":
-		f.format = ffTIFF
-		var err error
 		f.tiff, err = tiff.Read(rs)
 		return f, err
 	default:
