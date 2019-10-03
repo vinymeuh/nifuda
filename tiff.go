@@ -1,8 +1,7 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
 
-// Package tiff implements TIFF decoding as defined in TIFF revision 6.0 specification.
-package tiff
+package nifuda
 
 import (
 	"bytes"
@@ -24,16 +23,12 @@ import (
 // A valid TIFF file only require the IFH and IFD0.
 
 // File represents a parsed TIFF file.
-type File struct {
+type tiffFile struct {
 	rs io.ReadSeeker
 	// Image File Header
 	bo      binary.ByteOrder // byte order used within the file
 	version uint16           // always "42"
 	offset0 uint32           // offset in bytes for IFD0, from the start of the file
-	ifd0    []Tag
-	exif    []Tag
-	gps     []Tag
-	err     []error
 }
 
 // An Image File Directory (IFD) consists of a 2-byte count of the number of directory entries, followed by a
@@ -49,39 +44,24 @@ type ifd struct {
 	data    []byte
 }
 
-// Read parses TIFF data from an io.ReadSeeker.
-// Tags are interpreted according to provided tags dictionary.
-func Read(rs io.ReadSeeker) (*File, error) {
-	f := &File{rs: rs}
+// Parses TIFF data from an io.ReadSeeker.
+func tiffRead(rs io.ReadSeeker) (*Exif, error) {
+	x := &Exif{}
+	f := &tiffFile{rs: rs}
 	if err := f.readIFH(); err != nil {
 		return nil, err
 	}
 
-	err := f.readIFD0()
-	if err != nil && len(f.ifd0) == 0 { // failed to read ifd0
+	err := f.readIFD0(x)
+	if err != nil { // && len(f.ifd0) == 0 { // failed to read ifd0
 		return nil, err
 	}
 
-	return f, err
-}
-
-// Ifd0 returns Exif Tags from first IFD
-func (f *File) Ifd0() []Tag {
-	return f.ifd0
-}
-
-// Exif returns Exif Tags from Exif IFD
-func (f *File) Exif() []Tag {
-	return f.exif
-}
-
-// Gps returns Exif Tags from Exif IFD
-func (f *File) Gps() []Tag {
-	return f.gps
+	return x, err
 }
 
 // readIFH reads the TIFF Header
-func (f *File) readIFH() error {
+func (f *tiffFile) readIFH() error {
 	header := make([]byte, 8)
 	if _, err := f.rs.Read(header); err != nil {
 		return fmt.Errorf("failed to read 8 bytes: %w", err)
@@ -114,36 +94,36 @@ func (f *File) readIFH() error {
 }
 
 // readID0 reads the first IFD and decode it as Exif data
-func (f *File) readIFD0() error {
+func (f *tiffFile) readIFD0(x *Exif) error {
 	ifd0, err := f.readIFD(f.offset0)
 	if err != nil {
 		return err
 	}
-	f.ifd0 = f.parseIFDTags(ifd0, dictExif)
+	x.Ifd0 = f.parseIFDTags(ifd0)
 
 	// Exif IFD
-	for _, tag := range f.ifd0 {
+	for _, tag := range x.Ifd0 {
 		if tag.ID() == tagExifIfd {
 			exifIFD, err := f.readIFD(tag.Value().UInt32(0))
 			if err != nil {
 				return err
 			}
-			f.exif = f.parseIFDTags(exifIFD, dictExif)
+			x.Exif = f.parseIFDTags(exifIFD)
 		}
-		if tag.ID() == tagGpsIfd {
-			gpsIFD, err := f.readIFD(tag.Value().UInt32(0))
-			if err != nil {
-				return err
-			}
-			f.gps = f.parseIFDTags(gpsIFD, dictGps)
-		}
+		// if tag.ID() == tagGpsIfd {
+		// 	gpsIFD, err := f.readIFD(tag.Value().UInt32(0))
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	f.gps = f.parseIFDTags(gpsIFD, dictGps)
+		// }
 	}
 
 	return nil
 }
 
 // readIFD read the IFD starting at offset
-func (f *File) readIFD(offset uint32) (*ifd, error) {
+func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 	f.rs.Seek(int64(offset), io.SeekStart)
 	ifd := ifd{}
 
@@ -171,8 +151,9 @@ func (f *File) readIFD(offset uint32) (*ifd, error) {
 }
 
 // parseIFDTags parse IFD data and decode it using dict dictionary
-func (f *File) parseIFDTags(ifd *ifd, dict TagDictionary) []Tag {
-	tags := make([]Tag, ifd.entries)
+func (f *tiffFile) parseIFDTags(ifd *ifd) ExifTags {
+	//tags := make([]Tag, ifd.entries)
+	tags := make(ExifTags)
 
 	for i := 0; i < int(ifd.entries); i++ {
 		tag := Tag{}
@@ -197,8 +178,10 @@ func (f *File) parseIFDTags(ifd *ifd, dict TagDictionary) []Tag {
 				return tags
 			}
 		}
-		tag.decode(dict, f.bo)
-		tags[i] = tag
+
+		tag.decode(dictExif, f.bo)
+		tags[tag.name] = tag
+		//tags[i] = tag
 	}
 	return tags
 }

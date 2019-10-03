@@ -1,8 +1,7 @@
 // Copyright 2018 VinyMeuh. All rights reserved.
 // Use of the source code is governed by a MIT-style license that can be found in the LICENSE file.
 
-// Package jpeg implements JPEG decoding as defined in JPEG File Interchange Format version 1.02.
-package jpeg
+package nifuda
 
 import (
 	"bytes"
@@ -10,13 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-
-	"github.com/vinymeuh/nifuda/internal/tiff"
 )
 
-// Read parses JPEG from an io.ReadSeeker to retrieve embedded Tiff file hosting Exif tags.
+// jpegRead parses JPEG from an io.ReadSeeker to retrieve embedded Tiff file hosting Exif tags.
 // Returns an error if no Exif data found.
-func Read(rs io.ReadSeeker) (*tiff.File, error) {
+func jpegRead(rs io.ReadSeeker) (*Exif, error) {
 	// ensure we have a SOI
 	s0, err := nextSegment(rs)
 	if err != nil {
@@ -34,8 +31,8 @@ func Read(rs io.ReadSeeker) (*tiff.File, error) {
 		}
 
 		if s.marker == mAPP1 && string(s.data[0:6]) == "Exif\x00\x00" {
-			f, err := tiff.Read(bytes.NewReader(s.data[6:]))
-			return f, err
+			x, err := tiffRead(bytes.NewReader(s.data[6:]))
+			return x, err
 		}
 
 		if s.marker == mEOI || s.marker == mSOS { // don't know how to process after SOS marker
