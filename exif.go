@@ -9,14 +9,14 @@ import (
 	"io"
 )
 
+// Exif provides access to decoded EXIF tags.
 type Exif struct {
 	Ifd0 ExifTags
 	Exif ExifTags
-	//	Gps  GpsTags
+	Gps  ExifTags
 }
 
-// Read parses EXIF data from an io.ReadSeeker.
-// If successful, the returned file can be used to access EXIF tags.
+// Read decode EXIF data from an io.ReadSeeker.
 func Read(rs io.ReadSeeker) (*Exif, error) {
 
 	var a [2]byte
