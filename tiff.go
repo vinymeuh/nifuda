@@ -43,13 +43,6 @@ type ifd struct {
 	tags    []rawTag // list of undecoded tags
 }
 
-type rawTag struct {
-	id       uint16   // tag identifier
-	tiffType tiffType // tiff type idendifier
-	count    uint32   // the number of values in data
-	data     []byte   // undecoded payload for tag
-}
-
 // Parses TIFF data from an io.ReadSeeker.
 func tiffRead(rs io.ReadSeeker) (*Exif, error) {
 	x := &Exif{}
@@ -110,14 +103,14 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 	// Exif IFD
 	for _, tag := range x.Ifd0 {
 		if tag.ID() == tagExifIfd {
-			exifIFD, err := f.readIFD(tag.Value().UInt32(0))
+			exifIFD, err := f.readIFD(tag.UInt32(0))
 			if err != nil {
 				return err
 			}
 			x.Exif = f.parseIFDTagsAsExif(exifIFD)
 		}
 		if tag.ID() == tagGpsIfd {
-			gpsIFD, err := f.readIFD(tag.Value().UInt32(0))
+			gpsIFD, err := f.readIFD(tag.UInt32(0))
 			if err != nil {
 				return err
 			}
@@ -188,12 +181,8 @@ func (f *tiffFile) parseIFDTagsAsExif(ifd *ifd) ExifTags {
 	x := make(ExifTags)
 	for _, rawtag := range ifd.tags {
 		tag := Tag{
-			id: rawtag.id,
-			value: TagValue{
-				tiffType: rawtag.tiffType,
-				count:    rawtag.count,
-				raw:      rawtag.data,
-			},
+			id:  rawtag.id,
+			raw: rawtag,
 		}
 		tag.decode(dictExif, f.bo)
 		x[tag.name] = tag
@@ -205,12 +194,8 @@ func (f *tiffFile) parseIFDTagsAsGps(ifd *ifd) ExifTags {
 	x := make(ExifTags)
 	for _, rawtag := range ifd.tags {
 		tag := Tag{
-			id: rawtag.id,
-			value: TagValue{
-				tiffType: rawtag.tiffType,
-				count:    rawtag.count,
-				raw:      rawtag.data,
-			},
+			id:  rawtag.id,
+			raw: rawtag,
 		}
 		tag.decode(dictGps, f.bo)
 		x[tag.name] = tag

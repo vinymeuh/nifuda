@@ -73,7 +73,7 @@ func TestExifRead(t *testing.T) {
 				continue
 			}
 
-			got := x.Ifd0[tctag.name].Value().String()
+			got := x.Ifd0[tctag.name].String()
 			if got != tctag.value {
 				t.Errorf("%s, Ifd0.%v: error with tag value, expected=%s, got=%s", tc.filepath, tctag, tctag.value, got)
 			}
@@ -86,7 +86,7 @@ func TestExifRead(t *testing.T) {
 				continue
 			}
 
-			got := x.Exif[tctag.name].Value().String()
+			got := x.Exif[tctag.name].String()
 			if got != tctag.value {
 				t.Errorf("%s, Exif.%v: error with tag value, expected=%s, got=%s", tc.filepath, tctag, tctag.value, got)
 			}
