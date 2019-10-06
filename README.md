@@ -20,7 +20,7 @@ import (
     "log"
     "os"
 
-    "github.com/vinymeuh/nifuda/pkg/exif"
+    "github.com/vinymeuh/nifuda"
 )
 
 func main() {
@@ -28,22 +28,23 @@ func main() {
         log.Fatalf("Usage: %s EXIF_FILE", os.Args[0])
     }
 
-    osf, err := os.Open(os.Args[1])
+    f, err := os.Open(os.Args[1])
     if err != nil {
         log.Fatal(err)
     }
-    defer osf.Close()
+    defer f.Close()
 
-    f, err := exif.Read(osf)
+    x, err := nifuda.Read(f)
     if err != nil {
         log.Fatal(err)
     }
 
-    for namespace, tags := range f.Tags() {
-        for _, tag := range tags {
-            fmt.Printf("%-6s   %-30s   %s\n", namespace, tag.Name(), tag.Value().String())
-        }
+    for _, tag := range x.Ifd0 {
+        fmt.Printf("ifd0   %-30s   %s\n", tag.Name(), tag.String())
     }
+    for _, tag := range x.Exif {
+        fmt.Printf("exif   %-30s   %s\n", tag.Name(), tag.String())
+    }  
 }
 ```
 
