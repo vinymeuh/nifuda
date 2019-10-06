@@ -155,8 +155,8 @@ func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 
 	// parse raw tags (after offset because of possible nested Seek)
 	ifd.tags = make([]rawTag, ifd.entries)
+	tag := rawTag{}
 	for i := 0; i < int(ifd.entries); i++ {
-		tag := rawTag{}
 
 		binary.Read(bytes.NewReader(data[12*i:12*i+2]), f.bo, &tag.id)
 		binary.Read(bytes.NewReader(data[12*i+2:12*i+4]), f.bo, &tag.tiffType)
