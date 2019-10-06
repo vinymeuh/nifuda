@@ -15,6 +15,10 @@ type rawTag struct {
 	data     []byte   // undecoded payload for tag
 }
 
+type tagDictionary map[uint16]struct {
+	Name string
+}
+
 // tiffType is the TIFF data type as defined in page 15 of TIFF Revision 6.0
 type tiffType uint16
 
@@ -51,7 +55,7 @@ var tiffTypes = map[tiffType]struct {
 	DOUBLE:    {name: "DOUBLE", size: 8},
 }
 
-func (raw rawTag) decode(dict TagDictionary, bo binary.ByteOrder) Tag {
+func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 	tag := Tag{raw: raw}
 	if dict != nil {
 		if val, ok := dict[raw.id]; ok {

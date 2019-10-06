@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-type TagDictionary map[uint16]struct {
-	Name string
-}
-
 /*
 A Tag is a 12-byte record containing TagID identifying the type of information the tag contains and its value.
 
@@ -21,10 +17,8 @@ even though most fields contain only a single value.
 
 To save time and space the Offset contains directly the Value instead of pointing to the Value if and only if the value fits into 4 bytes.
 */
-
 type Tag struct {
-	name string // Tag name as decoded using a TagDictionary
-	//value     TagValue
+	name      string // Tag name as decoded using a TagDictionary
 	raw       rawTag
 	intValues []int64
 	ratValues [][]int64
