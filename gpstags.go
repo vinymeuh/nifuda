@@ -6,3 +6,16 @@ package nifuda
 
 type GpsTags struct {
 }
+
+// gpsTags contains GPS tags definitions
+var dictGps = TagDictionary{
+	/*****************************/
+	/* GPS Attribute Information */
+	/*****************************/
+	// A. Tags Relating to GPS
+	0: {Name: "GPSVersionID"},
+	1: {Name: "GPSLatitudeRef"},
+	2: {Name: "GPSLatitude"},
+	// To be completed ...
+	31: {Name: "GPSHPositioningError"},
+}
