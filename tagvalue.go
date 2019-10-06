@@ -10,7 +10,7 @@ import (
 )
 
 type TagValue struct {
-	dataType  DataType // The scalar type of the data items
+	tiffType  tiffType // The scalar type of the data items
 	count     uint32   // The number of values in the raw data
 	raw       []byte   // The raw value of data
 	intValues []int64
@@ -18,11 +18,11 @@ type TagValue struct {
 	strValue  string
 }
 
-// dataType is the TIFF data type as defined in page 15 of TIFF Revision 6.0
-type DataType uint16
+// tiffType is the TIFF data type as defined in page 15 of TIFF Revision 6.0
+type tiffType uint16
 
 const (
-	BYTE      DataType = 1
+	BYTE      tiffType = 1
 	ASCII              = 2
 	SHORT              = 3
 	LONG               = 4
@@ -36,7 +36,7 @@ const (
 	DOUBLE             = 12
 )
 
-var dataTypes = map[DataType]struct {
+var tiffTypes = map[tiffType]struct {
 	name string
 	size uint32
 }{
@@ -55,7 +55,7 @@ var dataTypes = map[DataType]struct {
 }
 
 func (tv TagValue) String() string {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case ASCII:
 		return tv.strValue
 	case BYTE, SHORT, LONG, SBYTE, SSHORT, SLONG:
@@ -69,7 +69,7 @@ func (tv TagValue) String() string {
 }
 
 func (tv TagValue) Int8(i int) int8 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case BYTE, SBYTE:
 		return int8(tv.intValues[i])
 	default:
@@ -78,7 +78,7 @@ func (tv TagValue) Int8(i int) int8 {
 }
 
 func (tv TagValue) Int16(i int) int16 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case SHORT, SSHORT:
 		return int16(tv.intValues[i])
 	default:
@@ -87,7 +87,7 @@ func (tv TagValue) Int16(i int) int16 {
 }
 
 func (tv TagValue) Int32(i int) int32 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case LONG, SLONG:
 		return int32(tv.intValues[i])
 	default:
@@ -96,7 +96,7 @@ func (tv TagValue) Int32(i int) int32 {
 }
 
 func (tv TagValue) UInt8(i int) uint8 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case BYTE:
 		return uint8(tv.intValues[i])
 	default:
@@ -105,7 +105,7 @@ func (tv TagValue) UInt8(i int) uint8 {
 }
 
 func (tv TagValue) UInt16(i int) uint16 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case SHORT:
 		return uint16(tv.intValues[i])
 	default:
@@ -114,7 +114,7 @@ func (tv TagValue) UInt16(i int) uint16 {
 }
 
 func (tv TagValue) UInt32(i int) uint32 {
-	switch tv.dataType {
+	switch tv.tiffType {
 	case LONG:
 		return uint32(tv.intValues[i])
 	default:

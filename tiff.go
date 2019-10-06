@@ -45,7 +45,7 @@ type ifd struct {
 
 type rawTag struct {
 	id       uint16   // tag identifier
-	tiffType DataType // tiff type idendifier -- TODO/Don't export
+	tiffType tiffType // tiff type idendifier
 	count    uint32   // the number of values in data
 	data     []byte   // undecoded payload for tag
 }
@@ -162,7 +162,7 @@ func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 		binary.Read(bytes.NewReader(data[12*i+2:12*i+4]), f.bo, &tag.tiffType)
 		binary.Read(bytes.NewReader(data[12*i+4:12*i+8]), f.bo, &tag.count)
 
-		length := dataTypes[tag.tiffType].size * tag.count
+		length := tiffTypes[tag.tiffType].size * tag.count
 		if length <= 4 {
 			tag.data = data[12*i+8 : 12*i+8+int(length)]
 		} else {
@@ -190,7 +190,7 @@ func (f *tiffFile) parseIFDTagsAsExif(ifd *ifd) ExifTags {
 		tag := Tag{
 			id: rawtag.id,
 			value: TagValue{
-				dataType: rawtag.tiffType,
+				tiffType: rawtag.tiffType,
 				count:    rawtag.count,
 				raw:      rawtag.data,
 			},
@@ -207,7 +207,7 @@ func (f *tiffFile) parseIFDTagsAsGps(ifd *ifd) ExifTags {
 		tag := Tag{
 			id: rawtag.id,
 			value: TagValue{
-				dataType: rawtag.tiffType,
+				tiffType: rawtag.tiffType,
 				count:    rawtag.count,
 				raw:      rawtag.data,
 			},

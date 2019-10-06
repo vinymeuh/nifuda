@@ -32,7 +32,7 @@ func (t Tag) ID() uint16 {
 }
 
 func (t Tag) Type() string {
-	return dataTypes[t.value.dataType].name
+	return tiffTypes[t.value.tiffType].name
 }
 
 func (t Tag) Name() string {
@@ -54,7 +54,7 @@ func (t *Tag) decode(dict TagDictionary, bo binary.ByteOrder) {
 		t.name = "undefined"
 	}
 
-	switch t.value.dataType {
+	switch t.value.tiffType {
 	case BYTE:
 		var v uint8
 		t.value.intValues = make([]int64, t.value.count)
