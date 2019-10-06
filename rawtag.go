@@ -9,50 +9,48 @@ import (
 )
 
 type rawTag struct {
-	id       uint16   // tag identifier
-	tiffType tiffType // tiff type idendifier
-	count    uint32   // the number of values in data
-	data     []byte   // undecoded payload for tag
+	id       uint16 // tag identifier
+	tiffType uint16 // tiff type idendifier
+	count    uint32 // the number of values in data
+	data     []byte // undecoded payload for tag
 }
 
 type tagDictionary map[uint16]struct {
 	Name string
 }
 
-// tiffType is the TIFF data type as defined in page 15 of TIFF Revision 6.0
-type tiffType uint16
-
+// TIFF types as defined in page 15 of TIFF Revision 6.0
 const (
-	BYTE      tiffType = 1
-	ASCII              = 2
-	SHORT              = 3
-	LONG               = 4
-	RATIONAL           = 5
-	SBYTE              = 6
-	UNDEFINED          = 7
-	SSHORT             = 8
-	SLONG              = 9
-	SRATIONAL          = 10
-	FLOAT              = 11
-	DOUBLE             = 12
+	ttBYTE      uint16 = 1
+	ttASCII            = 2
+	ttSHORT            = 3
+	ttLONG             = 4
+	ttRATIONAL         = 5
+	ttSBYTE            = 6
+	ttUNDEFINED        = 7
+	ttSSHORT           = 8
+	ttSLONG            = 9
+	ttSRATIONAL        = 10
+	ttFLOAT            = 11
+	ttDOUBLE           = 12
 )
 
-var tiffTypes = map[tiffType]struct {
+var tiffTypes = map[uint16]struct {
 	name string
 	size uint32
 }{
-	BYTE:      {name: "BYTE", size: 1},
-	ASCII:     {name: "ASCII", size: 1},
-	SHORT:     {name: "SHORT", size: 2},
-	LONG:      {name: "LONG", size: 4},
-	RATIONAL:  {name: "RATIONAL", size: 8},
-	SBYTE:     {name: "SBYTE", size: 1},
-	UNDEFINED: {name: "UNDEFINED", size: 1},
-	SSHORT:    {name: "SSHORT", size: 2},
-	SLONG:     {name: "SLONG", size: 4},
-	SRATIONAL: {name: "SRATIONAL", size: 8},
-	FLOAT:     {name: "FLOAT", size: 4},
-	DOUBLE:    {name: "DOUBLE", size: 8},
+	ttBYTE:      {name: "BYTE", size: 1},
+	ttASCII:     {name: "ASCII", size: 1},
+	ttSHORT:     {name: "SHORT", size: 2},
+	ttLONG:      {name: "LONG", size: 4},
+	ttRATIONAL:  {name: "RATIONAL", size: 8},
+	ttSBYTE:     {name: "SBYTE", size: 1},
+	ttUNDEFINED: {name: "UNDEFINED", size: 1},
+	ttSSHORT:    {name: "SSHORT", size: 2},
+	ttSLONG:     {name: "SLONG", size: 4},
+	ttSRATIONAL: {name: "SRATIONAL", size: 8},
+	ttFLOAT:     {name: "FLOAT", size: 4},
+	ttDOUBLE:    {name: "DOUBLE", size: 8},
 }
 
 func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
@@ -68,7 +66,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 	}
 
 	switch raw.tiffType {
-	case BYTE:
+	case ttBYTE:
 		var v uint8
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -76,9 +74,9 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case ASCII:
+	case ttASCII:
 		tag.strValue = string(raw.data[0 : raw.count-1]) // -1 to remove character '\0'
-	case SHORT:
+	case ttSHORT:
 		var v uint16
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -86,7 +84,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case LONG:
+	case ttLONG:
 		var v uint32
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -94,7 +92,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case RATIONAL:
+	case ttRATIONAL:
 		var n, d uint32
 		tag.ratValues = make([][]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -103,7 +101,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &d)
 			tag.ratValues[i] = []int64{int64(n), int64(d)}
 		}
-	case SBYTE:
+	case ttSBYTE:
 		var v int8
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -111,7 +109,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case SSHORT:
+	case ttSSHORT:
 		var v int16
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -119,7 +117,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case SLONG:
+	case ttSLONG:
 		var v int32
 		tag.intValues = make([]int64, raw.count)
 		raw := bytes.NewReader(raw.data)
@@ -127,7 +125,7 @@ func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 			binary.Read(raw, bo, &v)
 			tag.intValues[i] = int64(v)
 		}
-	case SRATIONAL:
+	case ttSRATIONAL:
 		var n, d int32
 		tag.ratValues = make([][]int64, raw.count)
 		raw := bytes.NewReader(raw.data)

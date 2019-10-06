@@ -18,7 +18,7 @@ even though most fields contain only a single value.
 To save time and space the Offset contains directly the Value instead of pointing to the Value if and only if the value fits into 4 bytes.
 */
 type Tag struct {
-	name      string // Tag name as decoded using a TagDictionary
+	name      string // Tag name as decoded using a tagDictionary
 	raw       rawTag
 	intValues []int64
 	ratValues [][]int64
@@ -39,11 +39,11 @@ func (t Tag) Name() string {
 
 func (t Tag) String() string {
 	switch t.raw.tiffType {
-	case ASCII:
+	case ttASCII:
 		return t.strValue
-	case BYTE, SHORT, LONG, SBYTE, SSHORT, SLONG:
+	case ttBYTE, ttSHORT, ttLONG, ttSBYTE, ttSSHORT, ttSLONG:
 		return strings.Trim(strings.Replace(fmt.Sprint(t.intValues), " ", " ", -1), "[]")
-	case RATIONAL, SRATIONAL:
+	case ttRATIONAL, ttSRATIONAL:
 		return strings.Trim(strings.Replace(strings.Replace(fmt.Sprint(t.ratValues), " ", "/", -1), "]/[", " ", -1), "[]")
 	default:
 		// Only 32 firsts characters postfixed with "..."
@@ -53,7 +53,7 @@ func (t Tag) String() string {
 
 func (t Tag) Int8(i int) int8 {
 	switch t.raw.tiffType {
-	case BYTE, SBYTE:
+	case ttBYTE, ttSBYTE:
 		return int8(t.intValues[i])
 	default:
 		return 0
@@ -62,7 +62,7 @@ func (t Tag) Int8(i int) int8 {
 
 func (t Tag) Int16(i int) int16 {
 	switch t.raw.tiffType {
-	case SHORT, SSHORT:
+	case ttSHORT, ttSSHORT:
 		return int16(t.intValues[i])
 	default:
 		return 0
@@ -71,7 +71,7 @@ func (t Tag) Int16(i int) int16 {
 
 func (t Tag) Int32(i int) int32 {
 	switch t.raw.tiffType {
-	case LONG, SLONG:
+	case ttLONG, ttSLONG:
 		return int32(t.intValues[i])
 	default:
 		return 0
@@ -80,7 +80,7 @@ func (t Tag) Int32(i int) int32 {
 
 func (t Tag) UInt8(i int) uint8 {
 	switch t.raw.tiffType {
-	case BYTE:
+	case ttBYTE:
 		return uint8(t.intValues[i])
 	default:
 		return 0
@@ -89,7 +89,7 @@ func (t Tag) UInt8(i int) uint8 {
 
 func (t Tag) UInt16(i int) uint16 {
 	switch t.raw.tiffType {
-	case SHORT:
+	case ttSHORT:
 		return uint16(t.intValues[i])
 	default:
 		return 0
@@ -98,7 +98,7 @@ func (t Tag) UInt16(i int) uint16 {
 
 func (t Tag) UInt32(i int) uint32 {
 	switch t.raw.tiffType {
-	case LONG:
+	case ttLONG:
 		return uint32(t.intValues[i])
 	default:
 		return 0
