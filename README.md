@@ -40,10 +40,10 @@ func main() {
     }
 
     for _, tag := range x.Ifd0 {
-        fmt.Printf("ifd0   %-30s   %s\n", tag.Name(), tag.Value().String())
+        fmt.Printf("ifd0   %-30s   %s\n", tag.Name(), tag.String())
     }
     for _, tag := range x.Exif {
-        fmt.Printf("exif   %-30s   %s\n", tag.Name(), tag.Value().String())
+        fmt.Printf("exif   %-30s   %s\n", tag.Name(), tag.String())
     }  
 }
 ```

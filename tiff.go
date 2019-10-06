@@ -180,11 +180,7 @@ func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 func (f *tiffFile) parseIFDTagsAsExif(ifd *ifd) ExifTags {
 	x := make(ExifTags)
 	for _, rawtag := range ifd.tags {
-		tag := Tag{
-			id:  rawtag.id,
-			raw: rawtag,
-		}
-		tag.decode(dictExif, f.bo)
+		tag := rawtag.decode(dictExif, f.bo)
 		x[tag.name] = tag
 	}
 	return x
@@ -193,11 +189,7 @@ func (f *tiffFile) parseIFDTagsAsExif(ifd *ifd) ExifTags {
 func (f *tiffFile) parseIFDTagsAsGps(ifd *ifd) ExifTags {
 	x := make(ExifTags)
 	for _, rawtag := range ifd.tags {
-		tag := Tag{
-			id:  rawtag.id,
-			raw: rawtag,
-		}
-		tag.decode(dictGps, f.bo)
+		tag := rawtag.decode(dictGps, f.bo)
 		x[tag.name] = tag
 	}
 	return x
