@@ -30,19 +30,6 @@ type tiffFile struct {
 	offset0 uint32           // offset in bytes for IFD0, from the start of the file
 }
 
-// An Image File Directory (IFD) consists of a 2-byte count of the number of directory entries, followed by a
-// sequence of 12-byte field entries, followed by a 4-byte offset of the next IFD (or 0 if none).
-//
-// There must be at least 1 IFD in a TIFF file and each IFD must have at least one entry.
-//
-// Each TIFF field has an associated Count.
-// This means that all fields are actually one-dimensional arrays, even though most fields contain only a single value.
-type ifd struct {
-	next    uint32   // offset in bytes to the next IFD, from the start of the file. 0 if none
-	entries uint16   // number of directory entries
-	tags    []rawTag // list of undecoded tags
-}
-
 // Parses TIFF data from an io.ReadSeeker.
 func tiffRead(rs io.ReadSeeker) (*Exif, error) {
 	x := &Exif{}
@@ -98,7 +85,7 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 	if err != nil {
 		return err
 	}
-	x.Ifd0 = f.parseIFDTagsAsExif(ifd0)
+	x.Ifd0 = ifd0.parseIFDTagsAsExif(f.bo)
 
 	// Exif IFD
 	for _, tag := range x.Ifd0 {
@@ -107,14 +94,14 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 			if err != nil {
 				return err
 			}
-			x.Exif = f.parseIFDTagsAsExif(exifIFD)
+			x.Exif = exifIFD.parseIFDTagsAsExif(f.bo)
 		}
 		if tag.ID() == tagGpsIfd {
 			gpsIFD, err := f.readIFD(tag.UInt32(0))
 			if err != nil {
 				return err
 			}
-			x.Gps = f.parseIFDTagsAsGps(gpsIFD)
+			x.Gps = gpsIFD.parseIFDTagsAsGps(f.bo)
 		}
 	}
 
@@ -122,9 +109,9 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 }
 
 // readIFD read the IFD starting at offset
-func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
+func (f *tiffFile) readIFD(offset uint32) (*tiffIFD, error) {
 	f.rs.Seek(int64(offset), io.SeekStart)
-	ifd := ifd{}
+	ifd := tiffIFD{}
 
 	// read the number of entries
 	entries := make([]byte, 2)
@@ -175,22 +162,4 @@ func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 	}
 
 	return &ifd, nil
-}
-
-func (f *tiffFile) parseIFDTagsAsExif(ifd *ifd) ExifTags {
-	x := make(ExifTags)
-	for _, rawtag := range ifd.tags {
-		tag := rawtag.decode(dictExif, f.bo)
-		x[tag.name] = tag
-	}
-	return x
-}
-
-func (f *tiffFile) parseIFDTagsAsGps(ifd *ifd) ExifTags {
-	x := make(ExifTags)
-	for _, rawtag := range ifd.tags {
-		tag := rawtag.decode(dictGps, f.bo)
-		x[tag.name] = tag
-	}
-	return x
 }
