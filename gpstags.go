@@ -3,7 +3,14 @@
 
 package nifuda
 
+import (
+	"encoding/binary"
+)
+
 type GpsTags struct {
+	GPSVersionID    string
+	GPSLatitudeRef  string
+	GPSLongitudeRef string
 }
 
 // gpsTags contains GPS tags definitions
@@ -44,4 +51,19 @@ var dictGps = tagDictionary{
 	29: {Name: "GPSDateStamp"},
 	30: {Name: "GPSDifferential"},
 	31: {Name: "GPSHPositioningError"},
+}
+
+func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
+	var gps GpsTags
+	for _, ifdtag := range ifd.tags {
+		switch ifdtag.id {
+		case 0:
+			gps.GPSVersionID = intArrayToString(ifdtag.ttByte(bo), ".")
+		case 1:
+			gps.GPSLatitudeRef = ifdtag.ttAscii()
+		case 3:
+			gps.GPSLongitudeRef = ifdtag.ttAscii()
+		}
+	}
+	return gps
 }

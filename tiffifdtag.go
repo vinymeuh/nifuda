@@ -8,7 +8,7 @@ import (
 	"encoding/binary"
 )
 
-type rawTag struct {
+type ifdTag struct {
 	id       uint16 // tag identifier
 	tiffType uint16 // tiff type idendifier
 	count    uint32 // the number of values in data
@@ -53,7 +53,23 @@ var tiffTypes = map[uint16]struct {
 	ttDOUBLE:    {name: "DOUBLE", size: 8},
 }
 
-func (raw rawTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
+func (it ifdTag) ttByte(bo binary.ByteOrder) []int {
+	b := make([]int, it.count)
+	raw := bytes.NewReader(it.data)
+	var v uint8
+	for i := range b {
+		binary.Read(raw, bo, &v)
+		b[i] = int(v)
+	}
+	return b
+}
+
+func (it ifdTag) ttAscii() string {
+	return string(it.data[0 : it.count-1]) // -1 to remove character '\0'
+}
+
+/*** ***/
+func (raw ifdTag) decode(dict tagDictionary, bo binary.ByteOrder) Tag {
 	tag := Tag{raw: raw}
 	if dict != nil {
 		if val, ok := dict[raw.id]; ok {

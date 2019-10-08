@@ -15,22 +15,13 @@ import "encoding/binary"
 type tiffIFD struct {
 	next    uint32   // offset in bytes to the next IFD, from the start of the file. 0 if none
 	entries uint16   // number of directory entries
-	tags    []rawTag // list of undecoded tags
+	tags    []ifdTag // list of undecoded tags
 }
 
 func (i *tiffIFD) parseIFDTagsAsExif(bo binary.ByteOrder) ExifTags {
 	x := make(ExifTags)
 	for _, rawtag := range i.tags {
 		tag := rawtag.decode(dictExif, bo)
-		x[tag.name] = tag
-	}
-	return x
-}
-
-func (i *tiffIFD) parseIFDTagsAsGps(bo binary.ByteOrder) ExifTags {
-	x := make(ExifTags)
-	for _, rawtag := range i.tags {
-		tag := rawtag.decode(dictGps, bo)
 		x[tag.name] = tag
 	}
 	return x
