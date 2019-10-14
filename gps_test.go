@@ -17,14 +17,12 @@ func TestGpsTags(t *testing.T) {
 		{
 			filepath: "./testdata/2018-05-14_095545.jpg",
 			gps: GpsTags{
-				GPSVersionID:        "2.2.0.0",
-				GPSLatitudeRef:      "N",
-				GPSLongitudeRef:     "E",
-				GPSImgDirectionRef:  "Magnetic direction",
-				GPSMapDatum:         "WGS-84",
-				GPSDestLatitudeRef:  "North",
-				GPSDestLongitudeRef: "East",
-				GPSDateStamp:        "2018:05:14",
+				GPSVersionID:       "2.2.0.0",
+				GPSLatitudeRef:     "North",
+				GPSLongitudeRef:    "East",
+				GPSImgDirectionRef: "Magnetic direction",
+				GPSMapDatum:        "WGS-84",
+				GPSDateStamp:       "2018:05:14",
 			},
 		},
 	}

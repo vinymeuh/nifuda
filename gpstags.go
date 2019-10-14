@@ -29,10 +29,20 @@ func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
 		case 0: // GPSVersionID
 			gps.GPSVersionID = intArrayToString(ifdtag.ttByte(bo), ".")
 		case 1: // GPSLatitudeRef
-			gps.GPSLatitudeRef = ifdtag.ttAscii()
+			switch ifdtag.ttAscii() {
+			case "N":
+				gps.GPSLatitudeRef = "North"
+			case "S":
+				gps.GPSLatitudeRef = "South"
+			}
 		case 2: // GPSLatitude
 		case 3: // GPSLongitudeRef
-			gps.GPSLongitudeRef = ifdtag.ttAscii()
+			switch ifdtag.ttAscii() {
+			case "E":
+				gps.GPSLongitudeRef = "East"
+			case "W":
+				gps.GPSLongitudeRef = "West"
+			}
 		case 4: // GPSLongitude
 		case 5: // GPSAltitudeRef
 		case 6: // GPSAltitude
