@@ -8,61 +8,100 @@ import (
 )
 
 type GpsTags struct {
-	GPSVersionID    string
-	GPSLatitudeRef  string
-	GPSLongitudeRef string
-}
-
-// gpsTags contains GPS tags definitions
-var dictGps = tagDictionary{
-	/*****************************/
-	/* GPS Attribute Information */
-	/*****************************/
-	// A. Tags Relating to GPS
-	0:  {Name: "GPSVersionID"},
-	1:  {Name: "GPSLatitudeRef"},
-	2:  {Name: "GPSLatitude"},
-	3:  {Name: "GPSLongitudeRef"},
-	4:  {Name: "GPSLongitude"},
-	5:  {Name: "GPSAltitudeRef"},
-	6:  {Name: "GPSAltitude"},
-	7:  {Name: "GPSTimeStamp"},
-	8:  {Name: "GPSSatellites"},
-	9:  {Name: "GPSStatus"},
-	10: {Name: "GPSMeasureMode"},
-	11: {Name: "GPSDOP"},
-	12: {Name: "GPSSpeedRef"},
-	13: {Name: "GPSSpeed"},
-	14: {Name: "GPSTrackRef"},
-	15: {Name: "GPSTrack"},
-	16: {Name: "GPSTrack"},
-	17: {Name: "GPSImgDirection"},
-	18: {Name: "GPSMapDatum"},
-	19: {Name: "GPSDestLatitudeRef"},
-	20: {Name: "GPSDestLatitude"},
-	21: {Name: "GPSDestLongitudeRef"},
-	22: {Name: "GPSDestLongitude"},
-	23: {Name: "GPSDestBearingRef"},
-	24: {Name: "GPSDestBearing"},
-	25: {Name: "GPSDestDistanceRef"},
-	26: {Name: "GPSDestDistance"},
-	27: {Name: "GPSProcessingMethod"},
-	28: {Name: "GPSAreaInformation"},
-	29: {Name: "GPSDateStamp"},
-	30: {Name: "GPSDifferential"},
-	31: {Name: "GPSHPositioningError"},
+	GPSVersionID        string
+	GPSLatitudeRef      string
+	GPSLongitudeRef     string
+	GPSSpeedRef         string
+	GPSTrackRef         string
+	GPSImgDirectionRef  string
+	GPSMapDatum         string
+	GPSDestLatitudeRef  string
+	GPSDestLongitudeRef string
+	GPSDestBearingRef   string
+	GPSDestDistanceRef  string
+	GPSDateStamp        string
 }
 
 func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
 	var gps GpsTags
 	for _, ifdtag := range ifd.tags {
 		switch ifdtag.id {
-		case 0:
+		case 0: // GPSVersionID
 			gps.GPSVersionID = intArrayToString(ifdtag.ttByte(bo), ".")
-		case 1:
+		case 1: // GPSLatitudeRef
 			gps.GPSLatitudeRef = ifdtag.ttAscii()
-		case 3:
+		case 2: // GPSLatitude
+		case 3: // GPSLongitudeRef
 			gps.GPSLongitudeRef = ifdtag.ttAscii()
+		case 4: // GPSLongitude
+		case 5: // GPSAltitudeRef
+		case 6: // GPSAltitude
+		case 7: // GPSTimeStamp
+		case 8: // GPSSatellites
+		case 9: // GPSStatus
+		case 10: // GPSMeasureMode
+		case 11: // GPSDOP
+		case 12: // GPSSpeedRef
+			gps.GPSSpeedRef = ifdtag.ttAscii()
+		case 13: // GPSSpeed
+		case 14: // GPSTrackRef
+			switch ifdtag.ttAscii() {
+			case "M":
+				gps.GPSTrackRef = "Magnetic direction"
+			case "T":
+				gps.GPSTrackRef = "True direction"
+			}
+		case 15: // GPSTrack
+		case 16: // GPSImgDirectionRef
+			switch ifdtag.ttAscii() {
+			case "M":
+				gps.GPSImgDirectionRef = "Magnetic direction"
+			case "T":
+				gps.GPSImgDirectionRef = "True direction"
+			}
+		case 17: // GPSImgDirection
+		case 18: // GPSMapDatum
+			gps.GPSMapDatum = ifdtag.ttAscii()
+		case 19: // GPSDestLatitudeRef
+			switch ifdtag.ttAscii() {
+			case "N":
+				gps.GPSDestLatitudeRef = "North"
+			case "S":
+				gps.GPSDestLatitudeRef = "South"
+			}
+		case 20: // GPSDestLatitude
+		case 21: // GPSDestLongitudeRef
+			switch ifdtag.ttAscii() {
+			case "E":
+				gps.GPSDestLongitudeRef = "East"
+			case "W":
+				gps.GPSDestLongitudeRef = "West"
+			}
+		case 22: // GPSDestLongitude
+		case 23: // GPSDestBearingRef
+			switch ifdtag.ttAscii() {
+			case "M":
+				gps.GPSDestBearingRef = "Magnetic direction"
+			case "T":
+				gps.GPSDestBearingRef = "True direction"
+			}
+		case 24: // GPSDestBearing
+		case 25: // GPSDestDistanceRef
+			switch ifdtag.ttAscii() {
+			case "K":
+				gps.GPSDestDistanceRef = "Kilometers"
+			case "M":
+				gps.GPSDestDistanceRef = "Miles"
+			case "N":
+				gps.GPSDestDistanceRef = "Nautical miles"
+			}
+		case 26: // GPSDestDistance
+		case 27: // GPSProcessingMethod
+		case 28: // GPSAreaInformation
+		case 29: // GPSDateStamp
+			gps.GPSDateStamp = ifdtag.ttAscii()
+		case 30: // GPSDifferential
+		case 31: // GPSHPositioningError
 		}
 	}
 	return gps
