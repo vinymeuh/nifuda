@@ -15,7 +15,7 @@ func TestGpsTags(t *testing.T) {
 		gps      GpsTags
 	}{
 		{
-			filepath: "./testdata/2018-05-14_095545.jpg",
+			filepath: "./testdata/TEST_2018-05-14_095545.jpg",
 			gps: GpsTags{
 				GPSVersionID:       "2.2.0.0",
 				GPSLatitudeRef:     "North",
