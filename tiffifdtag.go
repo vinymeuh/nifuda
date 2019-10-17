@@ -53,7 +53,7 @@ var tiffTypes = map[uint16]struct {
 	ttDOUBLE:    {name: "DOUBLE", size: 8},
 }
 
-func (it ifdTag) ttByte(bo binary.ByteOrder) []int {
+func (it ifdTag) byteToInt(bo binary.ByteOrder) []int {
 	b := make([]int, it.count)
 	raw := bytes.NewReader(it.data)
 	var v uint8
@@ -64,8 +64,31 @@ func (it ifdTag) ttByte(bo binary.ByteOrder) []int {
 	return b
 }
 
-func (it ifdTag) ttAscii() string {
+func (it ifdTag) asciiToString() string {
 	return string(it.data[0 : it.count-1]) // -1 to remove character '\0'
+}
+
+func (it ifdTag) shortToUint16(bo binary.ByteOrder) []uint16 {
+	var s uint16
+	S := make([]uint16, it.count)
+	raw := bytes.NewReader(it.data)
+	for i := range S {
+		binary.Read(raw, bo, &s)
+		S[i] = s
+	}
+	return S
+}
+
+func (it ifdTag) rationalToFloat32(bo binary.ByteOrder) []float32 {
+	var n, d uint32
+	r := make([]float32, it.count)
+	raw := bytes.NewReader(it.data)
+	for i := range r {
+		binary.Read(raw, bo, &n)
+		binary.Read(raw, bo, &d)
+		r[i] = float32(n / d)
+	}
+	return r
 }
 
 /*** ***/

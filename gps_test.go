@@ -17,10 +17,16 @@ func TestGpsTags(t *testing.T) {
 		{
 			filepath: "./testdata/TEST_2018-05-14_095545.jpg",
 			gps: GpsTags{
-				GPSVersionID:       "2.2.0.0",
-				GPSLatitudeRef:     "North",
-				GPSLongitudeRef:    "East",
+				GPSVersionID:   "2.2.0.0",
+				GPSLatitudeRef: "North",
+				//GPSLatitude:        "35° 1' 1.03\"",
+				GPSLongitudeRef: "East",
+				//GPSLongitude:       "135° 46' 59.69\"",
+				GPSAltitudeRef:     "Sea level",
+				GPSAltitude:        102,
+				GPSTimeStamp:       "00:55:44Z",
 				GPSImgDirectionRef: "Magnetic direction",
+				GPSImgDirection:    307,
 				GPSMapDatum:        "WGS-84",
 				GPSDateStamp:       "2018:05:14",
 			},
@@ -43,18 +49,39 @@ func TestGpsTags(t *testing.T) {
 		}
 
 		// test equality on each fields of GpsTags, one by one to have a meaningful message in case of error
-		typ := reflect.TypeOf(x.Gps)
+		gpsType := reflect.TypeOf(x.Gps)
 		got := reflect.ValueOf(x.Gps)
 		want := reflect.ValueOf(tc.gps)
 
-		for i := 0; i < typ.NumField(); i++ {
-			field := typ.Field(i)
-			gotV := got.FieldByName(field.Name).String()
-			wantV := want.FieldByName(field.Name).String()
-			if gotV != wantV {
-				t.Errorf("%s, Gps.%s: got=%s, want=%s", tc.filepath, field.Name, gotV, wantV)
+		for i := 0; i < gpsType.NumField(); i++ {
+			field := gpsType.Field(i)
+			gotV := got.FieldByName(field.Name)
+			wantV := want.FieldByName(field.Name)
+			switch gotV.Kind() {
+			case reflect.Float64:
+				if gotV.Float() != wantV.Float() {
+					t.Errorf("%s, Gps.%s: got=%f, want=%f", tc.filepath, field.Name, gotV.Float(), wantV.Float())
+				}
+			case reflect.String:
+				if gotV.String() != wantV.String() {
+					t.Errorf("%s, Gps.%s: got=%s, want=%s", tc.filepath, field.Name, gotV.String(), wantV.String())
+				}
 			}
 		}
 
 	}
+}
+
+func BenchmarkReadGpsTags(b *testing.B) {
+	var (
+		filepath = "./testdata/TEST_2018-05-14_095545.jpg"
+		x        *Exif
+		g        GpsTags
+	)
+	for n := 0; n < b.N; n++ {
+		f, _ := os.Open(filepath)
+		x, _ = Read(f)
+		g = x.Gps
+	}
+	_ = g
 }
