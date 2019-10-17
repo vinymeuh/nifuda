@@ -19,7 +19,7 @@ To save time and space the Offset contains directly the Value instead of pointin
 */
 type Tag struct {
 	name      string // Tag name as decoded using a tagDictionary
-	raw       rawTag
+	raw       ifdTag
 	intValues []int64
 	ratValues [][]int64
 	strValue  string

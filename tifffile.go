@@ -101,7 +101,7 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 			if err != nil {
 				return err
 			}
-			x.Gps = gpsIFD.parseIFDTagsAsGps(f.bo)
+			x.Gps = parseIFDTagsAsGpsTag(gpsIFD, f.bo)
 		}
 	}
 
@@ -134,8 +134,8 @@ func (f *tiffFile) readIFD(offset uint32) (*tiffIFD, error) {
 	binary.Read(bytes.NewReader(next), f.bo, &ifd.next)
 
 	// parse raw tags (after offset because of possible nested Seek)
-	ifd.tags = make([]rawTag, ifd.entries)
-	tag := rawTag{}
+	ifd.tags = make([]ifdTag, ifd.entries)
+	tag := ifdTag{}
 	for i := 0; i < int(ifd.entries); i++ {
 
 		binary.Read(bytes.NewReader(data[12*i:12*i+2]), f.bo, &tag.id)

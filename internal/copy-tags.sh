@@ -13,22 +13,22 @@
 
 SCRIPT_DIR=$(cd $(dirname $0) && pwd)
 
-TEMPLATE_JPEG="${SCRIPT_DIR}/data/jpeg.jpg"
-
 # values for tag anonymisation 
 ARTIST="Pink Panther"
 SERIAL="123456789"
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $(basename $0) IMAGE"
+if [ $# -ne 2 ]; then
+    echo "Usage: $(basename $0) EMPTY_IMAGE EXIF_IMAGE_SOURCE"
     exit 1
 fi
 
-IMAGE_SRC="$1"
-IMAGE_TGT="${SCRIPT_DIR}/data/TEST_$(basename ${IMAGE_SRC})"
+EMPTY_IMAGE=$1
+EXIF_IMAGE_SOURCE=$2
 
-cp "${TEMPLATE_JPEG}" "${IMAGE_TGT}"
+IMAGE_TGT="$(dirname ${EXIF_IMAGE_SOURCE})/TEST_$(basename ${EXIF_IMAGE_SOURCE})"
 
-exiftool -TagsFromFile "${IMAGE_SRC}" "${IMAGE_TGT}" -overwrite_original \
+cp "${EMPTY_IMAGE}" "${IMAGE_TGT}"
+
+exiftool -TagsFromFile "${EXIF_IMAGE_SOURCE}" "${IMAGE_TGT}" -overwrite_original \
     -Artist="${ARTIST}" -Copyright="${ARTIST}" -SerialNumber="${SERIAL}" \
     --ThumbnailImage -makernotes:all= -xmp:all=

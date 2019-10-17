@@ -13,7 +13,7 @@ import (
 type Exif struct {
 	Ifd0 ExifTags
 	Exif ExifTags
-	Gps  ExifTags
+	Gps  GpsTags
 }
 
 // Read decode EXIF data from an io.ReadSeeker.
