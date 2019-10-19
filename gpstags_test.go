@@ -71,17 +71,3 @@ func TestGpsTags(t *testing.T) {
 
 	}
 }
-
-func BenchmarkReadGpsTags(b *testing.B) {
-	var (
-		filepath = "./testdata/TEST_2018-05-14_095545.jpg"
-		x        *Exif
-		g        GpsTags
-	)
-	for n := 0; n < b.N; n++ {
-		f, _ := os.Open(filepath)
-		x, _ = Read(f)
-		g = x.Gps
-	}
-	_ = g
-}

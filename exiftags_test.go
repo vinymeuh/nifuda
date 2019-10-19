@@ -4,18 +4,9 @@
 package nifuda
 
 import (
-	"os"
 	"testing"
 )
 
-func BenchmarkReadExifJpeg(b *testing.B) {
-	var (
-		filepath = "./2018-05-14_095545.jpg"
-		x        *Exif
-	)
-	for n := 0; n < b.N; n++ {
-		f, _ := os.Open(filepath)
-		x, _ = Read(f)
-	}
-	_ = x
+func TestExifTags(t *testing.T) {
+
 }
