@@ -1,0 +1,34 @@
+{
+    "filepath": "testdata/TEST_2018-05-14_095545.jpg",
+    "exif": {
+        "ifd0": {
+            "YCbCrPositioning": "centered",
+            "ResolutionUnit":   "inches",
+            "DateTime":         "2018:05:14 09:55:45",
+            "Make":             "Motorola",
+            "Model":            "XT1039",
+            "Artist":           "Pink Panther",
+            "Copyright":        "Pink Panther"
+        },
+       "exif": {
+            "ExifVersion":       "0220",
+            "FlashpixVersion":   "0100",
+            "DateTimeOriginal":  "2018:05:14 09:55:45",
+            "DateTimeDigitized": "2002:12:08 12:00:00",
+            "ExposureProgram":   "normal program",
+            "MeteringMode":      "average"
+        },
+        "gps": {
+			"GPSVersionID":   "2.2.0.0",
+			"GPSLatitudeRef": "North",
+			"GPSLongitudeRef":     "East",
+			"GPSAltitudeRef":     "Sea level",
+			"GPSAltitude":        102,
+			"GPSTimeStamp":       "00:55:44Z",
+			"GPSImgDirectionRef": "Magnetic direction",
+			"GPSImgDirection":    307,
+			"GPSMapDatum":        "WGS-84",
+			"GPSDateStamp":       "2018:05:14"
+        }
+    }
+}

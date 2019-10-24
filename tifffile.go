@@ -81,28 +81,29 @@ func (f *tiffFile) readIFH() error {
 
 // readID0 reads the first IFD and decode it as Exif data
 func (f *tiffFile) readIFD0(x *Exif) error {
+	// IFD0
 	ifd0, err := f.readIFD(f.offset0)
 	if err != nil {
 		return err
 	}
-	x.Ifd0 = ifd0.parseIFDTagsAsExif(f.bo)
+	x.Ifd0 = parseIFDTagsAsExifTag(ifd0, f.bo)
 
 	// Exif IFD
-	for _, tag := range x.Ifd0 {
-		if tag.ID() == tagExifIfd {
-			exifIFD, err := f.readIFD(tag.UInt32(0))
-			if err != nil {
-				return err
-			}
-			x.Exif = exifIFD.parseIFDTagsAsExif(f.bo)
+	if x.Ifd0.ExifIFD > 0 {
+		exifIFD, err := f.readIFD(x.Ifd0.ExifIFD)
+		if err != nil {
+			return err
 		}
-		if tag.ID() == tagGpsIfd {
-			gpsIFD, err := f.readIFD(tag.UInt32(0))
-			if err != nil {
-				return err
-			}
-			x.Gps = parseIFDTagsAsGpsTag(gpsIFD, f.bo)
+		x.Exif = parseIFDTagsAsExifTag(exifIFD, f.bo)
+	}
+
+	// GPS IFD
+	if x.Ifd0.GpsIFD > 0 {
+		gpsIFD, err := f.readIFD(x.Ifd0.GpsIFD)
+		if err != nil {
+			return err
 		}
+		x.Gps = parseIFDTagsAsGpsTag(gpsIFD, f.bo)
 	}
 
 	return nil

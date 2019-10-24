@@ -1,0 +1,32 @@
+{
+    "filepath": "testdata/TEST_2019-07-21_132615_DSC_0361_DxO_PL2.jpg",
+    "exif": {
+        "ifd0": {
+            "YCbCrPositioning": "centered",
+            "ResolutionUnit":   "inches",
+            "DateTime":         "2019:07:21 13:26:15",
+            "Make":             "NIKON CORPORATION",
+            "Model":            "NIKON Z 6",
+            "Software":         "DxO PhotoLab 2.3.0",
+            "Artist":           "Pink Panther",
+            "Copyright":        "Pink Panther"
+        },
+       "exif": {
+            "ExifVersion":         "0231",
+            "FlashpixVersion":     "0100",
+            "DateTimeOriginal":    "2019:07:21 13:26:15",
+            "DateTimeDigitized":   "2019:07:21 13:26:15",
+            "OffsetTime":          "+02:00",
+            "OffsetTimeOriginal":  "+02:00",
+            "OffsetTimeDigitized": "+02:00",
+            "SubSecTime":          "72",
+            "SubSecTimeOriginal":  "72",
+            "SubSecTimeDigitized": "72",
+            "ExposureProgram":     "aperture priority",
+            "MeteringMode":        "center-weighted average"
+        },
+        "gps": {
+            "GPSVersionID": "2.3.0.0"
+        }
+    }
+}
