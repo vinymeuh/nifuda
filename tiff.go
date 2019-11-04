@@ -11,6 +11,40 @@ import (
 	"io"
 )
 
+// TIFF types as defined in page 15 of TIFF Revision 6.0
+const (
+	ttBYTE      uint16 = 1
+	ttASCII            = 2
+	ttSHORT            = 3
+	ttLONG             = 4
+	ttRATIONAL         = 5
+	ttSBYTE            = 6
+	ttUNDEFINED        = 7
+	ttSSHORT           = 8
+	ttSLONG            = 9
+	ttSRATIONAL        = 10
+	ttFLOAT            = 11
+	ttDOUBLE           = 12
+)
+
+var tiffTypes = map[uint16]struct {
+	name string
+	size uint32
+}{
+	ttBYTE:      {name: "BYTE", size: 1},
+	ttASCII:     {name: "ASCII", size: 1},
+	ttSHORT:     {name: "SHORT", size: 2},
+	ttLONG:      {name: "LONG", size: 4},
+	ttRATIONAL:  {name: "RATIONAL", size: 8},
+	ttSBYTE:     {name: "SBYTE", size: 1},
+	ttUNDEFINED: {name: "UNDEFINED", size: 1},
+	ttSSHORT:    {name: "SSHORT", size: 2},
+	ttSLONG:     {name: "SLONG", size: 4},
+	ttSRATIONAL: {name: "SRATIONAL", size: 8},
+	ttFLOAT:     {name: "FLOAT", size: 4},
+	ttDOUBLE:    {name: "DOUBLE", size: 8},
+}
+
 // TIFF is an image file format built on three kind of structure:
 //   * a unique Image File Header (IFH)
 //   * Image File Directories (IFD), each containing information about the image as well as pointers its bitmap data
@@ -110,9 +144,9 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 }
 
 // readIFD read the IFD starting at offset
-func (f *tiffFile) readIFD(offset uint32) (*tiffIFD, error) {
+func (f *tiffFile) readIFD(offset uint32) (*ifd, error) {
 	f.rs.Seek(int64(offset), io.SeekStart)
-	ifd := tiffIFD{}
+	ifd := ifd{}
 
 	// read the number of entries
 	entries := make([]byte, 2)

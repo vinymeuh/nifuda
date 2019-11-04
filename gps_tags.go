@@ -43,7 +43,7 @@ type GpsTags struct {
 	GPSHPositioningError float32
 }
 
-func parseIFDTagsAsGpsTags(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
+func parseIFDTagsAsGpsTags(ifd *ifd, bo binary.ByteOrder) GpsTags {
 	var t GpsTags
 
 	for _, ifdtag := range ifd.tags {

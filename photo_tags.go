@@ -30,7 +30,7 @@ type PhotoTags struct {
 	MeteringMode        string
 }
 
-func parseIFDTagsAsPhotoTags(ifd *tiffIFD, bo binary.ByteOrder) PhotoTags {
+func parseIFDTagsAsPhotoTags(ifd *ifd, bo binary.ByteOrder) PhotoTags {
 	var t PhotoTags
 
 	for _, ifdtag := range ifd.tags {

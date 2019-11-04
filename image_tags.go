@@ -33,7 +33,7 @@ type ImageTags struct {
 	Copyright        string
 }
 
-func parseIFDTagsAsImageTags(ifd *tiffIFD, bo binary.ByteOrder) ImageTags {
+func parseIFDTagsAsImageTags(ifd *ifd, bo binary.ByteOrder) ImageTags {
 	var t ImageTags
 
 	for _, ifdtag := range ifd.tags {
