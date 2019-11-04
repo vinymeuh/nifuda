@@ -8,6 +8,8 @@ import (
 	"fmt"
 )
 
+// GPSTags contains tags from GPS SubIFD.
+// Fields are defined in order they appeared in chapter 4.6.6 of Exif 2.31
 type GpsTags struct {
 	GPSVersionID         string
 	GPSLatitudeRef       string
@@ -41,18 +43,19 @@ type GpsTags struct {
 	GPSHPositioningError float32
 }
 
-func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
-	var gps GpsTags
+func parseIFDTagsAsGpsTags(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
+	var t GpsTags
+
 	for _, ifdtag := range ifd.tags {
 		switch ifdtag.id {
 		case 0: // GPSVersionID
-			gps.GPSVersionID = intArrayToString(ifdtag.byteToInt(bo), ".")
+			t.GPSVersionID = intArrayToString(ifdtag.byteToInt(bo), ".")
 		case 1: // GPSLatitudeRef
 			switch ifdtag.asciiToString() {
 			case "N":
-				gps.GPSLatitudeRef = "North"
+				t.GPSLatitudeRef = "North"
 			case "S":
-				gps.GPSLatitudeRef = "South"
+				t.GPSLatitudeRef = "South"
 			}
 		// case 2: // GPSLatitude
 		// 	r := ifdtag.rationalToFloat32(bo)
@@ -60,9 +63,9 @@ func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
 		case 3: // GPSLongitudeRef
 			switch ifdtag.asciiToString() {
 			case "E":
-				gps.GPSLongitudeRef = "East"
+				t.GPSLongitudeRef = "East"
 			case "W":
-				gps.GPSLongitudeRef = "West"
+				t.GPSLongitudeRef = "West"
 			}
 		// case 4: // GPSLongitude
 		// 	r := ifdtag.rationalToFloat32(bo)
@@ -70,106 +73,106 @@ func parseIFDTagsAsGpsTag(ifd *tiffIFD, bo binary.ByteOrder) GpsTags {
 		case 5: // GPSAltitudeRef
 			switch ifdtag.byteToInt(bo)[0] {
 			case 0:
-				gps.GPSAltitudeRef = "Sea level"
+				t.GPSAltitudeRef = "Sea level"
 			case 1:
-				gps.GPSAltitudeRef = "Sea level reference (negative value)"
+				t.GPSAltitudeRef = "Sea level reference (negative value)"
 			}
 		case 6: // GPSAltitude
-			gps.GPSAltitude = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSAltitude = ifdtag.rationalToFloat32(bo)[0]
 		case 7: // GPSTimeStamp
 			r := ifdtag.rationalToFloat32(bo)
-			gps.GPSTimeStamp = fmt.Sprintf("%02.0f:%02.0f:%02.0fZ", r[0], r[1], r[2])
+			t.GPSTimeStamp = fmt.Sprintf("%02.0f:%02.0f:%02.0fZ", r[0], r[1], r[2])
 		case 8: // GPSSatellites
-			gps.GPSSatellites = ifdtag.asciiToString()
+			t.GPSSatellites = ifdtag.asciiToString()
 		case 9: // GPSStatus
 			switch ifdtag.asciiToString() {
 			case "A":
-				gps.GPSStatus = "Measurement in progress"
+				t.GPSStatus = "Measurement in progress"
 			case "V":
-				gps.GPSStatus = "Measurement interrupted"
+				t.GPSStatus = "Measurement interrupted"
 			}
 		case 10: // GPSMeasureMode
 			switch ifdtag.asciiToString() {
 			case "2":
-				gps.GPSMeasureMode = "2-dimensional measurement"
+				t.GPSMeasureMode = "2-dimensional measurement"
 			case "3":
-				gps.GPSMeasureMode = "3-dimensional measurement"
+				t.GPSMeasureMode = "3-dimensional measurement"
 			}
 		case 11: // GPSDOP
-			gps.GPSDOP = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSDOP = ifdtag.rationalToFloat32(bo)[0]
 		case 12: // GPSSpeedRef
-			gps.GPSSpeedRef = ifdtag.asciiToString()
+			t.GPSSpeedRef = ifdtag.asciiToString()
 		case 13: // GPSSpeed
-			gps.GPSSpeed = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSSpeed = ifdtag.rationalToFloat32(bo)[0]
 		case 14: // GPSTrackRef
 			switch ifdtag.asciiToString() {
 			case "M":
-				gps.GPSTrackRef = "Magnetic direction"
+				t.GPSTrackRef = "Magnetic direction"
 			case "T":
-				gps.GPSTrackRef = "True direction"
+				t.GPSTrackRef = "True direction"
 			}
 		case 15: // GPSTrack
-			gps.GPSTrack = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSTrack = ifdtag.rationalToFloat32(bo)[0]
 		case 16: // GPSImgDirectionRef
 			switch ifdtag.asciiToString() {
 			case "M":
-				gps.GPSImgDirectionRef = "Magnetic direction"
+				t.GPSImgDirectionRef = "Magnetic direction"
 			case "T":
-				gps.GPSImgDirectionRef = "True direction"
+				t.GPSImgDirectionRef = "True direction"
 			}
 		case 17: // GPSImgDirection
-			gps.GPSImgDirection = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSImgDirection = ifdtag.rationalToFloat32(bo)[0]
 		case 18: // GPSMapDatum
-			gps.GPSMapDatum = ifdtag.asciiToString()
+			t.GPSMapDatum = ifdtag.asciiToString()
 		case 19: // GPSDestLatitudeRef
 			switch ifdtag.asciiToString() {
 			case "N":
-				gps.GPSDestLatitudeRef = "North"
+				t.GPSDestLatitudeRef = "North"
 			case "S":
-				gps.GPSDestLatitudeRef = "South"
+				t.GPSDestLatitudeRef = "South"
 			}
 		case 20: // GPSDestLatitude
 			r := ifdtag.rationalToFloat32(bo)
-			gps.GPSDestLatitude = fmt.Sprintf("%2.0f %f' %f\"", r[0], r[1], r[2])
+			t.GPSDestLatitude = fmt.Sprintf("%2.0f %f' %f\"", r[0], r[1], r[2])
 		case 21: // GPSDestLongitudeRef
 			switch ifdtag.asciiToString() {
 			case "E":
-				gps.GPSDestLongitudeRef = "East"
+				t.GPSDestLongitudeRef = "East"
 			case "W":
-				gps.GPSDestLongitudeRef = "West"
+				t.GPSDestLongitudeRef = "West"
 			}
 		case 22: // GPSDestLongitude
 			r := ifdtag.rationalToFloat32(bo)
-			gps.GPSDestLongitude = fmt.Sprintf("%2.0f %f' %f\"", r[0], r[1], r[2])
+			t.GPSDestLongitude = fmt.Sprintf("%2.0f %f' %f\"", r[0], r[1], r[2])
 		case 23: // GPSDestBearingRef
 			switch ifdtag.asciiToString() {
 			case "M":
-				gps.GPSDestBearingRef = "Magnetic direction"
+				t.GPSDestBearingRef = "Magnetic direction"
 			case "T":
-				gps.GPSDestBearingRef = "True direction"
+				t.GPSDestBearingRef = "True direction"
 			}
 		case 24: // GPSDestBearing
-			gps.GPSDestBearing = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSDestBearing = ifdtag.rationalToFloat32(bo)[0]
 		case 25: // GPSDestDistanceRef
 			switch ifdtag.asciiToString() {
 			case "K":
-				gps.GPSDestDistanceRef = "Kilometers"
+				t.GPSDestDistanceRef = "Kilometers"
 			case "M":
-				gps.GPSDestDistanceRef = "Miles"
+				t.GPSDestDistanceRef = "Miles"
 			case "N":
-				gps.GPSDestDistanceRef = "Nautical miles"
+				t.GPSDestDistanceRef = "Nautical miles"
 			}
 		case 26: // GPSDestDistance
-			gps.GPSDestDistance = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSDestDistance = ifdtag.rationalToFloat32(bo)[0]
 		case 27: // GPSProcessingMethod
 		case 28: // GPSAreaInformation
 		case 29: // GPSDateStamp
-			gps.GPSDateStamp = ifdtag.asciiToString()
+			t.GPSDateStamp = ifdtag.asciiToString()
 		case 30: // GPSDifferential
-			gps.GPSDifferential = ifdtag.shortToUint16(bo)[0]
+			t.GPSDifferential = ifdtag.shortToUint16(bo)[0]
 		case 31: // GPSHPositioningError
-			gps.GPSHPositioningError = ifdtag.rationalToFloat32(bo)[0]
+			t.GPSHPositioningError = ifdtag.rationalToFloat32(bo)[0]
 		}
 	}
-	return gps
+	return t
 }

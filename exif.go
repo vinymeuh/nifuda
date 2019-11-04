@@ -10,9 +10,9 @@ import (
 
 // Exif provides access to decoded EXIF tags.
 type Exif struct {
-	Ifd0 ExifTags
-	Exif ExifTags
-	Gps  GpsTags
+	Image ImageTags
+	Photo PhotoTags
+	Gps   GpsTags
 }
 
 // Read decode EXIF data from an io.ReadSeeker.

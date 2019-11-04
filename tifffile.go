@@ -86,24 +86,24 @@ func (f *tiffFile) readIFD0(x *Exif) error {
 	if err != nil {
 		return err
 	}
-	x.Ifd0 = parseIFDTagsAsExifTag(ifd0, f.bo)
+	x.Image = parseIFDTagsAsImageTags(ifd0, f.bo)
 
 	// Exif IFD
-	if x.Ifd0.ExifIFD > 0 {
-		exifIFD, err := f.readIFD(x.Ifd0.ExifIFD)
+	if x.Image.ExifIFD > 0 {
+		exifIFD, err := f.readIFD(x.Image.ExifIFD)
 		if err != nil {
 			return err
 		}
-		x.Exif = parseIFDTagsAsExifTag(exifIFD, f.bo)
+		x.Photo = parseIFDTagsAsPhotoTags(exifIFD, f.bo)
 	}
 
 	// GPS IFD
-	if x.Ifd0.GpsIFD > 0 {
-		gpsIFD, err := f.readIFD(x.Ifd0.GpsIFD)
+	if x.Image.GpsIFD > 0 {
+		gpsIFD, err := f.readIFD(x.Image.GpsIFD)
 		if err != nil {
 			return err
 		}
-		x.Gps = parseIFDTagsAsGpsTag(gpsIFD, f.bo)
+		x.Gps = parseIFDTagsAsGpsTags(gpsIFD, f.bo)
 	}
 
 	return nil

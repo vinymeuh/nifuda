@@ -80,16 +80,16 @@ func TestReadTags(t *testing.T) {
 
 		// test IFD0 Tags
 		testEachFields(t, td.Filepath,
-			reflect.TypeOf(x.Ifd0),
-			reflect.ValueOf(x.Ifd0),
-			reflect.ValueOf(td.Exif.Ifd0),
+			reflect.TypeOf(x.Image),
+			reflect.ValueOf(x.Image),
+			reflect.ValueOf(td.Exif.Image),
 		)
 
 		// test Exif Tags
 		testEachFields(t, td.Filepath,
-			reflect.TypeOf(x.Exif),
-			reflect.ValueOf(x.Exif),
-			reflect.ValueOf(td.Exif.Exif),
+			reflect.TypeOf(x.Photo),
+			reflect.ValueOf(x.Photo),
+			reflect.ValueOf(td.Exif.Photo),
 		)
 
 		// test GPS Tags
