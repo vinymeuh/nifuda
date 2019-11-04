@@ -6,6 +6,8 @@ package nifuda
 import (
 	"bytes"
 	"encoding/binary"
+	"strconv"
+	"strings"
 )
 
 // An Image File Directory (IFD) consists of a 2-byte count of the number of directory entries, followed by a
@@ -79,4 +81,17 @@ func (it ifdTag) rationalToFloat32(bo binary.ByteOrder) []float32 {
 
 func (it ifdTag) undefinedToString() string {
 	return string(it.data[0:it.count])
+}
+
+// Helpers
+func intArrayToString(a []int, sep string) string {
+	if len(a) == 0 {
+		return ""
+	}
+
+	b := make([]string, len(a))
+	for i, v := range a {
+		b[i] = strconv.Itoa(v)
+	}
+	return strings.Join(b, sep)
 }

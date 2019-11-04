@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-// GPSTags contains tags from GPS SubIFD.
+// GpsTags contains tags from GPS SubIFD.
 // Fields are defined in order they appeared in chapter 4.6.6 of Exif 2.31
 type GpsTags struct {
 	GPSVersionID         string
