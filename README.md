@@ -19,12 +19,13 @@ import (
     "fmt"
     "log"
     "os"
+    "reflect"
 
     "github.com/vinymeuh/nifuda"
 )
 
 func main() {
-    if len(os.Args) != 1 {
+    if len(os.Args) != 2 {
         log.Fatalf("Usage: %s EXIF_FILE", os.Args[0])
     }
 
@@ -39,12 +40,17 @@ func main() {
         log.Fatal(err)
     }
 
-    for _, tag := range x.Ifd0 {
-        fmt.Printf("ifd0   %-30s   %s\n", tag.Name(), tag.String())
+    v := reflect.ValueOf(x.Image)
+    vt := v.Type()
+    for i := 0; i < vt.NumField(); i++ {
+        fmt.Printf("Image.%-30s   %v\n", vt.Field(i).Name, v.Field(i).Interface())
     }
-    for _, tag := range x.Exif {
-        fmt.Printf("exif   %-30s   %s\n", tag.Name(), tag.String())
-    }  
+
+    v = reflect.ValueOf(x.Photo)
+    vt = v.Type()
+    for i := 0; i < vt.NumField(); i++ {
+        fmt.Printf("Photo.%-30s   %v\n", vt.Field(i).Name, v.Field(i).Interface())
+    }
 }
 ```
 
