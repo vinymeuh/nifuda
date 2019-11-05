@@ -13,19 +13,19 @@ import (
 	"os"
 )
 
-func SOI() []byte {
+func soi() []byte {
 	return []byte{
 		0xff, 0xd8,
 	}
 }
 
-func EOI() []byte {
+func eoi() []byte {
 	return []byte{
 		0xff, 0xd9,
 	}
 }
 
-func APP0() []byte {
+func app0() []byte {
 	return []byte{
 		0xff, 0xe0,
 		0x00, 0x10, // segment length
@@ -54,7 +54,7 @@ func createFile(filepath string, data ...[]byte) {
 }
 
 func main() {
-	createFile("data/nosoi.jpg", EOI())
+	createFile("data/nosoi.jpg", eoi())
 
-	createFile("data/minimal.jpg", SOI(), APP0(), EOI())
+	createFile("data/minimal.jpg", soi(), app0(), eoi())
 }

@@ -13,7 +13,7 @@ import (
 	"os"
 )
 
-func IFH() []byte {
+func ifh() []byte {
 	return []byte{
 		0x4d, 0x4d, // MM - big endian
 		0x00, 0x2a, // 42
@@ -21,7 +21,7 @@ func IFH() []byte {
 	}
 }
 
-func IFD() []byte {
+func ifd() []byte {
 	return []byte{
 		// number of entries (2 bits)
 		0x00, 0x01, // 1
@@ -51,31 +51,31 @@ func createFile(filepath string, data ...[]byte) {
 }
 
 func main() {
-	createFile("data/minimal.tif", IFH(), IFD())
+	createFile("data/minimal.tif", ifh(), ifd())
 
-	ifd0 := IFD()
+	ifd0 := ifd()
 	ifd0[17] = 0x26
-	ifd1 := IFD()
-	createFile("data/minimal_with_ifd1.tif", IFH(), ifd0, ifd1)
+	ifd1 := ifd()
+	createFile("data/minimal_with_ifd1.tif", ifh(), ifd0, ifd1)
 
-	header := IFH()
+	header := ifh()
 	header[3] = 0x00
 	createFile("data/wrong_version.tif", header)
 
-	header = IFH()
+	header = ifh()
 	header[7] = 0x09
-	createFile("data/wrong_offset0.tif", header, IFD())
+	createFile("data/wrong_offset0.tif", header, ifd())
 
-	header = IFH()
+	header = ifh()
 	header[7] = 0x00
 	createFile("data/no_ifd0.tif", header)
 
-	ifd := IFD()
-	ifd[17] = 0x08
-	createFile("data/recursive_ifd0.tif", IFH(), ifd)
+	ifd0 = ifd()
+	ifd0[17] = 0x08
+	createFile("data/recursive_ifd0.tif", ifh(), ifd0)
 
-	ifd0 = IFD()
+	ifd0 = ifd()
 	ifd0[17] = 0x26
-	createFile("data/wrong_ifd1.tif", IFH(), ifd0, IFD()[:4])
+	createFile("data/wrong_ifd1.tif", ifh(), ifd0, ifd()[:4])
 
 }
