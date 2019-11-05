@@ -1,10 +1,11 @@
 # nifuda
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://godoc.org/github.com/vinymeuh/nifuda?status.svg)](https://godoc.org/github.com/vinymeuh/nifuda)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vinymeuh/nifuda)](https://goreportcard.com/report/github.com/vinymeuh/nifuda)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/github/release/vinymeuh/nifuda)](https://github.com/vinymeuh/nifuda/releases/latest)
 [![Build Status](https://travis-ci.org/vinymeuh/nifuda.svg?branch=master)](https://travis-ci.org/vinymeuh/nifuda)
 [![codecov](https://codecov.io/gh/vinymeuh/nifuda/branch/master/graph/badge.svg)](https://codecov.io/gh/vinymeuh/nifuda)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vinymeuh/nifuda)](https://goreportcard.com/report/github.com/vinymeuh/nifuda)
 
 `nifuda` provides a native Go library to read tags from EXIF image files.
 
